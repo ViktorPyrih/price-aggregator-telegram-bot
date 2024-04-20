@@ -1,1 +1,11 @@
-spring.application.name=price-aggregator-telegram-bot
+spring:
+  application:
+    name: price-aggregator-telegram-bot
+  data:
+    redis:
+      host: localhost
+      port: 6379
+price-aggregator-telegram-bot:
+  configuration:
+    token: ENC(vCL5XHOfLld/iVbWxPegxyw4+71GhZGAEpzveiAEJElYcJhUaQ46ZYisSZOk77pi3OUf3GWSzXEULATQESskgACHSrU1btbaf8OIRYsypMY=)
+    username: PriceAggregator2024Bot

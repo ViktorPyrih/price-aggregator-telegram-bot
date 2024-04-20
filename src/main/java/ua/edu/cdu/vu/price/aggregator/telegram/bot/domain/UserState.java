@@ -1,25 +1,14 @@
-package ua.edu.cdu.vu.event.notification.telegram.bot.domain;
-
-import lombok.Value;
+package ua.edu.cdu.vu.price.aggregator.telegram.bot.domain;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
-import static ua.edu.cdu.vu.event.notification.telegram.bot.util.TelegramBotConstants.NO_DATA;
 
-@Value
-public class UserState {
+public record UserState(Long userId, int flowId, int stepId, Map<String, String> data) {
 
     private static final int INITIAL_ID = 1;
-
-    Long userId;
-
-    int flowId;
-    int stepId;
-
-    Map<String, String> data;
 
     public static UserState initial(long userId, int flowId) {
         return new UserState(userId, flowId, INITIAL_ID, new HashMap<>());
@@ -38,9 +27,8 @@ public class UserState {
         if (isNull(updatedData)) {
             updatedData = new HashMap<>();
         }
-        if (!NO_DATA.equals(value)) {
-            updatedData.put(key, value);
-        }
+
+        updatedData.put(key, value);
 
         return new UserState(userId, flowId, stepId, updatedData);
     }

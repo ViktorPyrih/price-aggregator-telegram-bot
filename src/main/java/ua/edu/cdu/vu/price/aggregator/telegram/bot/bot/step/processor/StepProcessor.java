@@ -1,11 +1,11 @@
-package ua.edu.cdu.vu.event.notification.telegram.bot.component.step.processor;
+package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.processor;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ua.edu.cdu.vu.event.notification.telegram.bot.domain.UserState;
-import ua.edu.cdu.vu.event.notification.telegram.bot.service.UserStateService;
-import ua.edu.cdu.vu.event.notification.telegram.bot.component.step.Step;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.Step;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserStateService;
 
 import java.util.List;
 import java.util.Map;
@@ -28,9 +28,9 @@ public class StepProcessor {
     }
 
     public void process(UserState userState, Update update) throws TelegramApiException {
-        Optional<UserState> updatedUserState = Optional.ofNullable(steps.get(userState.getFlowId()))
-                .map(flowSteps -> flowSteps.get(userState.getStepId()))
-                .orElseThrow(() -> new IllegalStateException("There is now step found for: flowId: %d and stepId: %d".formatted(userState.getFlowId(), userState.getStepId())))
+        var updatedUserState = Optional.ofNullable(steps.get(userState.flowId()))
+                .map(flowSteps -> flowSteps.get(userState.stepId()))
+                .orElseThrow(() -> new IllegalStateException("There is now step found for: flowId: %d and stepId: %d".formatted(userState.flowId(), userState.stepId())))
                 .process(update, userState);
         if (updatedUserState.isEmpty()) {
             userStateService.delete(userState);

@@ -1,4 +1,4 @@
-package ua.edu.cdu.vu.event.notification.telegram.bot.component.command;
+package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command;
 
 import org.springframework.stereotype.Component;
 

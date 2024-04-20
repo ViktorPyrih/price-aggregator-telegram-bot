@@ -1,4 +1,4 @@
-package ua.edu.cdu.vu.event.notification.telegram.bot.component.command;
+package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command;
 
 import lombok.Builder;
 import lombok.Value;
@@ -10,10 +10,6 @@ public interface BotCommand {
     String ROOT = "/";
     String START = "/start";
     String HELP = "/help";
-    String CREATE = "/create";
-    String DELETE = "/delete";
-    String UPDATE = "/update";
-    String GET_ALL = "/all";
 
     @Value
     @Builder
@@ -28,8 +24,4 @@ public interface BotCommand {
     }
 
     Result execute(Update update) throws TelegramApiException;
-
-    default Long getUserId(Update update) {
-        return update.hasCallbackQuery() ? update.getCallbackQuery().getFrom().getId() : update.getMessage().getFrom().getId();
-    }
 }

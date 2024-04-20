@@ -1,14 +1,16 @@
-package ua.edu.cdu.vu.event.notification.telegram.bot.service;
+package ua.edu.cdu.vu.price.aggregator.telegram.bot.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ua.edu.cdu.vu.event.notification.telegram.bot.component.command.BotCommand;
-import ua.edu.cdu.vu.event.notification.telegram.bot.component.command.parser.BotCommandParser;
-import ua.edu.cdu.vu.event.notification.telegram.bot.component.command.resolver.BotCommandResolver;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.BotCommand;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.parser.BotCommandParser;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.resolver.BotCommandResolver;
 
 import java.util.Objects;
+
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getChatId;
 
 @Service
 @RequiredArgsConstructor
@@ -35,9 +37,5 @@ public class BotCommandService {
         if (Objects.nonNull(result.getResponse())) {
             telegramSenderService.send(chatId, result.getResponse());
         }
-    }
-
-    private long getChatId(Update update) {
-        return update.hasCallbackQuery() ? update.getCallbackQuery().getMessage().getChatId() : update.getMessage().getChatId();
     }
 }

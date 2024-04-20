@@ -1,4 +1,4 @@
-package ua.edu.cdu.vu.event.notification.telegram.bot.redis.hash;
+package ua.edu.cdu.vu.price.aggregator.telegram.bot.redis.hash;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;

@@ -1,8 +1,9 @@
-package ua.edu.cdu.vu.price.aggregator.telegram.bot.service;
+package ua.edu.cdu.vu.price.aggregator.telegram.bot.redis;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserStateService;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.mapper.UserStateMapper;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.redis.hash.UserStateHash;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.redis.repository.UserStateRepository;
@@ -11,7 +12,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserStateService {
+public class RedisUserStateService implements UserStateService {
 
     private final UserStateRepository userStateRepository;
     private final UserStateMapper userStateMapper;

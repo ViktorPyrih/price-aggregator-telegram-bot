@@ -1,8 +1,8 @@
-package ua.edu.cdu.vu.event.notification.telegram.bot.component.command.resolver;
+package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.resolver;
 
 import org.springframework.stereotype.Component;
-import ua.edu.cdu.vu.event.notification.telegram.bot.component.command.BotCommand;
-import ua.edu.cdu.vu.event.notification.telegram.bot.component.command.Command;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.BotCommand;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.Command;
 
 import java.util.List;
 import java.util.Map;

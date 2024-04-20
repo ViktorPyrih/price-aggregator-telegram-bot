@@ -1,8 +1,8 @@
-package ua.edu.cdu.vu.event.notification.telegram.bot.component.command.impl.basic;
+package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.basic;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
-import ua.edu.cdu.vu.event.notification.telegram.bot.component.command.BotCommand;
-import ua.edu.cdu.vu.event.notification.telegram.bot.component.command.Command;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.BotCommand;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.Command;
 
 @Command(BotCommand.ROOT)
 public class RootCommand implements BotCommand {
