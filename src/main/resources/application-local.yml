@@ -1,0 +1,3 @@
+price-aggregator-telegram-bot:
+  cache:
+    enabled: false

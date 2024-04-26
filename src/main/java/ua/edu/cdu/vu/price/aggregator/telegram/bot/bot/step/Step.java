@@ -1,16 +1,65 @@
 package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step;
 
+import lombok.Value;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
 
-import java.util.Optional;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.BACK;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.COMPLETE;
 
 public interface Step {
+
+    int CHOOSE_MARKETPLACE_STEP_ID = 1;
+    int CHOOSE_CATEGORY_STEP_ID = 2;
+    int CHOOSE_SUBCATEGORY_STEP_ID = 3;
+    int CHOOSE_SUBCATEGORY2_STEP_ID = 4;
+    int CHOOSE_FILTER_KEY_STEP_ID = 5;
+    int CHOOSE_FILTER_VALUE_STEP_ID = 6;
+    int CHOOSE_FILTER_STEP_ID = 7;
+    int CHOOSE_MIN_PRICE_STEP_ID = 8;
+    int CHOOSE_MAX_PRICE_STEP_ID = 9;
+
+    @Value(staticConstructor = "of")
+    class Result {
+
+        Integer nextStepId;
+        UserState userState;
+
+        public boolean isUserStatePresent() {
+            return userState != null;
+        }
+
+        public boolean isUserStateAndNextStepIdPresent() {
+            return userState != null && nextStepId != null;
+        }
+
+        public static Result of(UserState userState) {
+            return new Result(null, userState);
+        }
+
+    }
 
     int flowId();
 
     int stepId();
 
-    Optional<UserState> process(Update update, UserState userState) throws TelegramApiException;
+    default Result processUpdate(Update update, UserState userState) throws TelegramApiException {
+        if (BACK.equals(update.getMessage().getText())) {
+            return processBack(update, userState);
+        }
+        if (COMPLETE.equals(update.getMessage().getText())) {
+            return processComplete(update, userState);
+        }
+
+        return process(update, userState);
+    }
+
+    Result process(Update update, UserState userState) throws TelegramApiException;
+
+    Result processBack(Update update, UserState userState) throws TelegramApiException;
+
+    default Result processComplete(Update update, UserState userState) throws TelegramApiException {
+        return process(update, userState);
+    }
 }

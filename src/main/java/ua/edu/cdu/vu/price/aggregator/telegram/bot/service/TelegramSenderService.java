@@ -6,7 +6,6 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -31,22 +30,13 @@ public class TelegramSenderService {
     }
 
     public void send(long chatId, String message) throws TelegramApiException {
-        send(chatId, message, true);
+        send(chatId, message, false);
     }
 
     public void send(long chatId, String text, ReplyKeyboardMarkup markup) throws TelegramApiException {
         botProvider.getObject().execute(SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
-                .parseMode(ParseMode.HTML)
-                .replyMarkup(markup)
-                .build());
-    }
-
-    public void send(long chatId, String message, InlineKeyboardMarkup markup) throws TelegramApiException {
-        botProvider.getObject().execute(SendMessage.builder()
-                .chatId(chatId)
-                .text(message)
                 .parseMode(ParseMode.HTML)
                 .replyMarkup(markup)
                 .build());

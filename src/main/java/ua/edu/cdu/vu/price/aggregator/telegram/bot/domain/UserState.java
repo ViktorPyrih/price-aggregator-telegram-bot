@@ -5,8 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
-public record UserState(Long userId, int flowId, int stepId, Map<String, String> data) {
+public record UserState(long userId, int flowId, int stepId, Map<String, String> data) {
 
     private static final int INITIAL_ID = 1;
 
@@ -18,8 +19,20 @@ public record UserState(Long userId, int flowId, int stepId, Map<String, String>
         return new UserState(userId, flowId, stepId + 1, data);
     }
 
+    public UserState previousStep() {
+        if (stepId == INITIAL_ID) {
+            return this;
+        }
+
+        return new UserState(userId, flowId, stepId - 1, data);
+    }
+
     public UserState firstStep() {
         return new UserState(userId, flowId, INITIAL_ID, data);
+    }
+
+    public UserState withStepId(int stepId) {
+        return new UserState(userId, flowId, stepId, data);
     }
 
     public UserState addDataEntry(String key, String value) {
@@ -31,10 +44,6 @@ public record UserState(Long userId, int flowId, int stepId, Map<String, String>
         updatedData.put(key, value);
 
         return new UserState(userId, flowId, stepId, updatedData);
-    }
-
-    public UserState addDataEntry(String key, long value) {
-        return addDataEntry(key, String.valueOf(value));
     }
 
     public String getDataEntry(String key) {
@@ -49,11 +58,23 @@ public record UserState(Long userId, int flowId, int stepId, Map<String, String>
         return Optional.ofNullable(data.get(key));
     }
 
-    public void removeDataEntry(String key) {
-        if (isNull(data)) {
-            return;
+    public boolean hasDataEntry(String key) {
+        return findDataEntry(key).isPresent();
+    }
+
+    public UserState removeDataEntriesByPrefix(String prefix) {
+        if (nonNull(data)) {
+            data.keySet().removeIf(key -> key.startsWith(prefix));
         }
 
-        data.remove(key);
+        return this;
+    }
+
+    public UserState removeDataEntry(String key) {
+        if (nonNull(data)) {
+            data.remove(key);
+        }
+
+        return this;
     }
 }

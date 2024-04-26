@@ -8,8 +8,6 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.BotCommand;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.parser.BotCommandParser;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.resolver.BotCommandResolver;
 
-import java.util.Objects;
-
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getChatId;
 
 @Service
@@ -34,7 +32,7 @@ public class BotCommandService {
 
     private void processResult(Update update, BotCommand.Result result) throws TelegramApiException {
         long chatId = getChatId(update);
-        if (Objects.nonNull(result.getResponse())) {
+        if (!result.isEmpty()) {
             telegramSenderService.send(chatId, result.getResponse());
         }
     }

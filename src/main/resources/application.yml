@@ -1,4 +1,6 @@
 spring:
+  main:
+    web-application-type: none
   application:
     name: price-aggregator-telegram-bot
   data:
@@ -9,3 +11,7 @@ price-aggregator-telegram-bot:
   configuration:
     token: ENC(vCL5XHOfLld/iVbWxPegxyw4+71GhZGAEpzveiAEJElYcJhUaQ46ZYisSZOk77pi3OUf3GWSzXEULATQESskgACHSrU1btbaf8OIRYsypMY=)
     username: PriceAggregator2024Bot
+  clients:
+    price-aggregator-api:
+      url: http://localhost:8080/api/v1
+      api-key: ENC(z/GvjLpZfOb7+YBBH0vBd6G+jhv1JUuuj5lwkDsRsKgGZhxTQUw7ZR5M+qdnv6Kgol3IbQWIiOfwg1f9Qq4nfw==)

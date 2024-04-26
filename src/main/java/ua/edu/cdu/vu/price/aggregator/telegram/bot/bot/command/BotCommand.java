@@ -17,6 +17,10 @@ public interface BotCommand {
 
         String response;
 
+        public boolean isEmpty() {
+            return response == null;
+        }
+
         public static Result empty() {
             return Result.builder().build();
         }

@@ -14,6 +14,7 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.BACK;
 
 @Component
 public class StepProcessor {
@@ -28,14 +29,26 @@ public class StepProcessor {
     }
 
     public void process(UserState userState, Update update) throws TelegramApiException {
-        var updatedUserState = Optional.ofNullable(steps.get(userState.flowId()))
-                .map(flowSteps -> flowSteps.get(userState.stepId()))
-                .orElseThrow(() -> new IllegalStateException("There is now step found for: flowId: %d and stepId: %d".formatted(userState.flowId(), userState.stepId())))
-                .process(update, userState);
-        if (updatedUserState.isEmpty()) {
-            userStateService.delete(userState);
+        if (BACK.equals(update.getMessage().getText())) {
+            processInternal(userState.previousStep().previousStep(), update);
         } else {
-            userStateService.save(updatedUserState.get());
+            processInternal(userState, update);
         }
     }
+    
+    private void processInternal(UserState userState, Update update) throws TelegramApiException {
+        var result = Optional.ofNullable(steps.get(userState.flowId()))
+                .map(flowSteps -> flowSteps.get(userState.stepId()))
+                .orElseThrow(() -> new IllegalStateException("There is no step found for: flowId: %d and stepId: %d".formatted(userState.flowId(), userState.stepId())))
+                .processUpdate(update, userState);
+        if (result.isUserStatePresent()) {
+            userStateService.save(result.getUserState());
+        } else {
+            userStateService.delete(userState);
+        }
+
+        if (result.isUserStateAndNextStepIdPresent()) {
+            processInternal(result.getUserState().withStepId(result.getNextStepId()), update);
+        }
+    } 
 }
