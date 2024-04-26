@@ -1,13 +1,13 @@
 package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.aggregator;
 
 import lombok.RequiredArgsConstructor;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.Step;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Filter;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.PriceAggregatorService;
 
 import java.util.List;
-import java.util.Optional;
 
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*;
 
@@ -30,16 +30,8 @@ public abstract class FilterStep implements Step {
         return priceAggregatorService.getFilters(marketplace, category, subcategory, subcategory2);
     }
 
-    List<String> extractKeys(List<Filter> filters) {
-        return filters.stream()
-                .map(Filter::getKey)
-                .toList();
-    }
-
-    Optional<List<String>> extractValues(List<Filter> filters, String key) {
-        return filters.stream()
-                .filter(filter -> filter.getKey().equals(key))
-                .findAny()
-                .map(Filter::getValues);
+    @Override
+    public Result processComplete(Update update, UserState userState) {
+        return Result.of(CHOOSE_MIN_PRICE_STEP_ID, userState);
     }
 }

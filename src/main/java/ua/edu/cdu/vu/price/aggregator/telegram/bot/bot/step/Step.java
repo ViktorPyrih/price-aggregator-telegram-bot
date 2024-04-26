@@ -16,9 +16,8 @@ public interface Step {
     int CHOOSE_SUBCATEGORY2_STEP_ID = 4;
     int CHOOSE_FILTER_KEY_STEP_ID = 5;
     int CHOOSE_FILTER_VALUE_STEP_ID = 6;
-    int CHOOSE_FILTER_STEP_ID = 7;
-    int CHOOSE_MIN_PRICE_STEP_ID = 8;
-    int CHOOSE_MAX_PRICE_STEP_ID = 9;
+    int CHOOSE_MIN_PRICE_STEP_ID = 7;
+    int CHOOSE_MAX_PRICE_STEP_ID = 8;
 
     @Value(staticConstructor = "of")
     class Result {
@@ -37,7 +36,6 @@ public interface Step {
         public static Result of(UserState userState) {
             return new Result(null, userState);
         }
-
     }
 
     int flowId();
@@ -55,11 +53,14 @@ public interface Step {
         return process(update, userState);
     }
 
+    void onStart(Update update, UserState userState) throws TelegramApiException;
+
     Result process(Update update, UserState userState) throws TelegramApiException;
 
     Result processBack(Update update, UserState userState) throws TelegramApiException;
 
     default Result processComplete(Update update, UserState userState) throws TelegramApiException {
-        return process(update, userState);
+        onStart(update, userState);
+        return Result.of(userState);
     }
 }

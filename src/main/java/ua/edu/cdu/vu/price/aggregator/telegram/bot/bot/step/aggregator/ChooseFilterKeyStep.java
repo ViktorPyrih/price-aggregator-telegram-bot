@@ -3,19 +3,22 @@ package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.aggregator;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Filter;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.PriceAggregatorService;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.TelegramSenderService;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Buttons;
 
-import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*;
+import java.util.List;
+
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.FILTER_KEY;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getChatId;
 
 @Component
 public class ChooseFilterKeyStep extends FilterStep {
 
-    private static final String WRONG_SUBCATEGORY_MESSAGE = "Please, choose one of the following subcategories: ";
     private static final String CHOOSE_FILTER_MESSAGE = "Choose a filter, please";
+    private static final String WRONG_FILTER_MESSAGE = "Please, choose one of the following filters: ";
 
     private final TelegramSenderService telegramSenderService;
 
@@ -30,35 +33,38 @@ public class ChooseFilterKeyStep extends FilterStep {
     }
 
     @Override
+    public void onStart(Update update, UserState userState) throws TelegramApiException {
+        long chatId = getChatId(update);
+
+        var filters = getFilters(userState);
+        telegramSenderService.send(chatId, CHOOSE_FILTER_MESSAGE, Buttons.keyboard(extractKeys(filters), true, true));
+    }
+
+    @Override
     public Result process(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
 
-        String marketplace = userState.getDataEntry(MARKETPLACE);
-        String category = userState.getDataEntry(CATEGORY);
-        String subcategory = userState.getDataEntry(SUBCATEGORY);
+        var filters = extractKeys(getFilters(userState));
+        String filter = update.getMessage().getText();
 
-        var subcategories2 = priceAggregatorService.getSubcategories(marketplace, category, subcategory);
-        String subcategory2 = update.getMessage().getText();
-
-        if (subcategories2.contains(subcategory2)) {
-            var filters = priceAggregatorService.getFilters(marketplace, category, subcategory, subcategory2);
-            telegramSenderService.send(chatId, CHOOSE_FILTER_MESSAGE, Buttons.keyboard(extractKeys(filters), true, true));
-
-            return Result.of(userState.nextStep().addDataEntry(SUBCATEGORY2, subcategory2));
+        if (filters.contains(filter)) {
+            return Result.of(userState.nextStep().addDataEntry(FILTER_KEY, filter));
         }
 
-        telegramSenderService.send(chatId, WRONG_SUBCATEGORY_MESSAGE + String.join(", ", subcategories2));
+        telegramSenderService.send(chatId, WRONG_FILTER_MESSAGE + String.join(", ", filters));
 
         return Result.of(userState);
     }
 
     @Override
     public Result processBack(Update update, UserState userState) throws TelegramApiException {
-        long chatId = getChatId(update);
+        onStart(update, userState);
+        return Result.of(userState.removeDataEntry(FILTER_KEY));
+    }
 
-        var filters = getFilters(userState);
-        telegramSenderService.send(chatId, CHOOSE_FILTER_MESSAGE, Buttons.keyboard(extractKeys(filters), true, true));
-
-        return Result.of(userState.nextStep().removeDataEntry(FILTER_KEY));
+    private List<String> extractKeys(List<Filter> filters) {
+        return filters.stream()
+                .map(Filter::getKey)
+                .toList();
     }
 }

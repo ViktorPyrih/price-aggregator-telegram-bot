@@ -15,6 +15,7 @@ import java.util.function.Function;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.BACK;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.COMPLETE;
 
 @Component
 public class StepProcessor {
@@ -29,26 +30,54 @@ public class StepProcessor {
     }
 
     public void process(UserState userState, Update update) throws TelegramApiException {
-        if (BACK.equals(update.getMessage().getText())) {
-            processInternal(userState.previousStep().previousStep(), update);
+        process(userState, update, false);
+    }
+
+    public void process(UserState userState, Update update, boolean isInitial) throws TelegramApiException {
+        if (isInitial) {
+            Step step = getStep(userState);
+            userStateService.save(userState);
+            step.onStart(update, userState);
+        } else if (BACK.equals(update.getMessage().getText())) {
+            UserState previousStepUserState = userState.previousStep();
+            Step step = getStep(previousStepUserState);
+            process(previousStepUserState, update, step);
         } else {
-            processInternal(userState, update);
+            Step step = getStep(userState);
+            process(userState, update, step);
         }
     }
-    
-    private void processInternal(UserState userState, Update update) throws TelegramApiException {
-        var result = Optional.ofNullable(steps.get(userState.flowId()))
-                .map(flowSteps -> flowSteps.get(userState.stepId()))
-                .orElseThrow(() -> new IllegalStateException("There is no step found for: flowId: %d and stepId: %d".formatted(userState.flowId(), userState.stepId())))
-                .processUpdate(update, userState);
-        if (result.isUserStatePresent()) {
-            userStateService.save(result.getUserState());
+
+    private void process(UserState userState, Update update, Step step) throws TelegramApiException {
+
+        var result = step.processUpdate(update, userState);
+
+        if (result.isUserStateAndNextStepIdPresent()) {
+            UserState newUserState = result.getUserState().withStepId(result.getNextStepId());
+            process(newUserState, update, getStep(newUserState));
+        } else if (result.isUserStatePresent()) {
+            UserState newUserState = result.getUserState();
+            userStateService.save(newUserState);
+
+            String text = update.getMessage().getText();
+            if (!BACK.equals(text) && !COMPLETE.equals(text)) {
+                var nextStep = findStep(newUserState);
+                if (nextStep.isPresent()) {
+                    nextStep.get().onStart(update, newUserState);
+                }
+            }
         } else {
             userStateService.delete(userState);
         }
+    }
 
-        if (result.isUserStateAndNextStepIdPresent()) {
-            processInternal(result.getUserState().withStepId(result.getNextStepId()), update);
-        }
-    } 
+    private Step getStep(UserState userState) {
+        return findStep(userState)
+                .orElseThrow(() -> new IllegalStateException("There is no step found for: flowId: %d and stepId: %d".formatted(userState.flowId(), userState.stepId())));
+    }
+
+    private Optional<Step> findStep(UserState userState) {
+        return Optional.ofNullable(steps.get(userState.flowId()))
+                .map(flowSteps -> flowSteps.get(userState.stepId()));
+    }
 }

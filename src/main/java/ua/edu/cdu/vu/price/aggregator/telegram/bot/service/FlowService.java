@@ -24,6 +24,6 @@ public class FlowService {
     public void start(int id, Update update, UnaryOperator<UserState> userStateCustomizer) throws TelegramApiException {
         long userId = getUserId(update);
         UserState userState = userStateCustomizer.apply(UserState.initial(userId, id));
-        stepProcessor.process(userState, update);
+        stepProcessor.process(userState, update, true);
     }
 }

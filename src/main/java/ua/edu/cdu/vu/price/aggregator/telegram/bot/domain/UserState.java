@@ -27,10 +27,6 @@ public record UserState(long userId, int flowId, int stepId, Map<String, String>
         return new UserState(userId, flowId, stepId - 1, data);
     }
 
-    public UserState firstStep() {
-        return new UserState(userId, flowId, INITIAL_ID, data);
-    }
-
     public UserState withStepId(int stepId) {
         return new UserState(userId, flowId, stepId, data);
     }

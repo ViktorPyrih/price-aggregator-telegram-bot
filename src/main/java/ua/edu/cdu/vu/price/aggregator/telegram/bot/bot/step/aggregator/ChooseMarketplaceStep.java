@@ -11,6 +11,7 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.TelegramSenderService
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Buttons;
 
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.AGGREGATOR_FLOW_ID;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.MARKETPLACE;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getChatId;
 
 @Component
@@ -18,6 +19,7 @@ import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.get
 public class ChooseMarketplaceStep implements Step {
 
     private static final String CHOOSE_MARKETPLACE_MESSAGE = "Choose a marketplace, please";
+    private static final String WRONG_MARKETPLACE_MESSAGE = "Please, choose one of the following marketplaces: ";
 
     private final PriceAggregatorService priceAggregatorService;
     private final TelegramSenderService telegramSenderService;
@@ -33,17 +35,30 @@ public class ChooseMarketplaceStep implements Step {
     }
 
     @Override
+    public void onStart(Update update, UserState userState) throws TelegramApiException {
+        long chatId = getChatId(update);
+        var marketplaces = priceAggregatorService.getMarketplaces();
+        telegramSenderService.send(chatId, CHOOSE_MARKETPLACE_MESSAGE, Buttons.keyboard(marketplaces));
+    }
+
+    @Override
     public Result process(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
 
         var marketplaces = priceAggregatorService.getMarketplaces();
-        telegramSenderService.send(chatId, CHOOSE_MARKETPLACE_MESSAGE, Buttons.keyboard(marketplaces));
+        String marketplace = update.getMessage().getText();
+        if (marketplaces.contains(marketplace)) {
+            return Result.of(userState.nextStep().addDataEntry(MARKETPLACE, marketplace));
+        }
 
-        return Result.of(userState.nextStep());
+        telegramSenderService.send(chatId, WRONG_MARKETPLACE_MESSAGE + String.join(", ", marketplaces));
+
+        return Result.of(userState);
     }
 
     @Override
     public Result processBack(Update update, UserState userState) throws TelegramApiException {
-        return process(update, userState);
+        onStart(update, userState);
+        return Result.of(userState.removeDataEntry(MARKETPLACE));
     }
 }
