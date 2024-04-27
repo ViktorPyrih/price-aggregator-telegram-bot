@@ -8,8 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.BACK;
-import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.COMPLETE;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*;
 
 @UtilityClass
 public class Buttons {
@@ -33,14 +32,18 @@ public class Buttons {
     }
 
     public static ReplyKeyboardMarkup keyboard(List<String> buttons, boolean addBackButton, boolean addCompleteButton) {
+        return keyboard(buttons, addBackButton, addCompleteButton, false);
+    }
+
+    public static ReplyKeyboardMarkup keyboard(List<String> buttons, boolean addBackButton, boolean addCompleteButton, boolean addResetButton) {
         return ReplyKeyboardMarkup.builder()
                 .isPersistent(true)
                 .resizeKeyboard(true)
-                .keyboard(rows(buttons, addBackButton, addCompleteButton))
+                .keyboard(rows(buttons, addBackButton, addCompleteButton, addResetButton))
                 .build();
     }
 
-    private static List<KeyboardRow> rows(List<String> buttons, boolean addBackButton, boolean addCompleteButton) {
+    private static List<KeyboardRow> rows(List<String> buttons, boolean addBackButton, boolean addCompleteButton, boolean addResetButton) {
         var rows = buttons.stream()
                 .map(Buttons::row)
                 .collect(Collectors.toList());
@@ -49,6 +52,9 @@ public class Buttons {
         }
         if (addBackButton) {
             rows.add(row(BACK));
+        }
+        if (addResetButton) {
+            rows.add(row(RESET));
         }
 
         return rows;

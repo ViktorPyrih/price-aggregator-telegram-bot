@@ -27,13 +27,12 @@ public class ChooseFilterValueStep extends FilterStep {
 
     private static final String CHOOSE_FILTER_VALUES_MESSAGE = "Choose filter values, please";
     private static final String WRONG_FILTER_VALUE_MESSAGE = "Please, choose one of the following filter values: ";
+    private static final String RESET_FILTERS_TEMPLATE = "Resetting filter values by key: '%s'...";
 
-    private final TelegramSenderService telegramSenderService;
     private final ObjectMapper objectMapper;
 
     public ChooseFilterValueStep(PriceAggregatorService priceAggregatorService, TelegramSenderService telegramSenderService, ObjectMapper objectMapper) {
-        super(priceAggregatorService);
-        this.telegramSenderService = telegramSenderService;
+        super(priceAggregatorService, telegramSenderService);
         this.objectMapper = objectMapper;
     }
 
@@ -50,7 +49,7 @@ public class ChooseFilterValueStep extends FilterStep {
         String filterKey = userState.getDataEntry(FILTER_KEY);
         var filterValues = extractValues(filters, filterKey);
 
-        telegramSenderService.send(chatId, CHOOSE_FILTER_VALUES_MESSAGE, Buttons.keyboard(filterValues, true, true));
+        telegramSenderService.send(chatId, CHOOSE_FILTER_VALUES_MESSAGE, Buttons.keyboard(filterValues, true, true, true));
     }
 
     @Override
@@ -87,6 +86,15 @@ public class ChooseFilterValueStep extends FilterStep {
     @Override
     public Result processBack(Update update, UserState userState) {
         return Result.of(CHOOSE_FILTER_KEY_STEP_ID, userState);
+    }
+
+    @Override
+    public Result processReset(Update update, UserState userState) throws TelegramApiException {
+        long chatId = getChatId(update);
+        String filterKey = userState.getDataEntry(FILTER_KEY);
+        telegramSenderService.send(chatId, RESET_FILTERS_TEMPLATE.formatted(filterKey));
+
+        return Result.of(userState.removeDataEntry(FILTER_KEY_PREFIX + filterKey));
     }
 
     private List<String> extractValues(List<Filter> filters, String key) {

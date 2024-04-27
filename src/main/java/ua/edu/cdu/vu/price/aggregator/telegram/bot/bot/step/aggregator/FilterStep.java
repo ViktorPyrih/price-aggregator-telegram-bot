@@ -6,6 +6,7 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.Step;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Filter;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.PriceAggregatorService;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.TelegramSenderService;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*
 public abstract class FilterStep implements Step {
 
     final PriceAggregatorService priceAggregatorService;
+    final TelegramSenderService telegramSenderService;
 
     @Override
     public int flowId() {

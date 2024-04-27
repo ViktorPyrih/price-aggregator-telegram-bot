@@ -5,8 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
 
-import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.BACK;
-import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.COMPLETE;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*;
 
 public interface Step {
 
@@ -43,11 +42,15 @@ public interface Step {
     int stepId();
 
     default Result processUpdate(Update update, UserState userState) throws TelegramApiException {
-        if (BACK.equals(update.getMessage().getText())) {
+        String text = update.getMessage().getText();
+        if (BACK.equals(text)) {
             return processBack(update, userState);
         }
-        if (COMPLETE.equals(update.getMessage().getText())) {
+        if (COMPLETE.equals(text)) {
             return processComplete(update, userState);
+        }
+        if (RESET.equals(text)) {
+            return processReset(update, userState);
         }
 
         return process(update, userState);
@@ -62,5 +65,9 @@ public interface Step {
     default Result processComplete(Update update, UserState userState) throws TelegramApiException {
         onStart(update, userState);
         return Result.of(userState);
+    }
+
+    default Result processReset(Update update, UserState userState) throws TelegramApiException {
+        return process(update, userState);
     }
 }

@@ -12,6 +12,7 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Buttons;
 import java.util.List;
 
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.FILTER_KEY;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.FILTER_KEY_PREFIX;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getChatId;
 
 @Component
@@ -19,12 +20,10 @@ public class ChooseFilterKeyStep extends FilterStep {
 
     private static final String CHOOSE_FILTER_MESSAGE = "Choose a filter, please";
     private static final String WRONG_FILTER_MESSAGE = "Please, choose one of the following filters: ";
-
-    private final TelegramSenderService telegramSenderService;
+    private static final String RESET_FILTERS_MESSAGE = "Resetting filters...";
 
     public ChooseFilterKeyStep(PriceAggregatorService priceAggregatorService, TelegramSenderService telegramSenderService) {
-        super(priceAggregatorService);
-        this.telegramSenderService = telegramSenderService;
+        super(priceAggregatorService, telegramSenderService);
     }
 
     @Override
@@ -37,7 +36,7 @@ public class ChooseFilterKeyStep extends FilterStep {
         long chatId = getChatId(update);
 
         var filters = getFilters(userState);
-        telegramSenderService.send(chatId, CHOOSE_FILTER_MESSAGE, Buttons.keyboard(extractKeys(filters), true, true));
+        telegramSenderService.send(chatId, CHOOSE_FILTER_MESSAGE, Buttons.keyboard(extractKeys(filters), true, true, true));
     }
 
     @Override
@@ -60,6 +59,13 @@ public class ChooseFilterKeyStep extends FilterStep {
     public Result processBack(Update update, UserState userState) throws TelegramApiException {
         onStart(update, userState);
         return Result.of(userState.removeDataEntry(FILTER_KEY));
+    }
+
+    @Override
+    public Result processReset(Update update, UserState userState) throws TelegramApiException {
+        long chatId = getChatId(update);
+        telegramSenderService.send(chatId, RESET_FILTERS_MESSAGE);
+        return Result.of(userState.removeDataEntriesByPrefix(FILTER_KEY_PREFIX));
     }
 
     private List<String> extractKeys(List<Filter> filters) {

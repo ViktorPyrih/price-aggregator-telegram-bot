@@ -49,7 +49,7 @@ public class ChooseMaxPriceStep implements Step {
         }
 
         double minPrice = Double.parseDouble(userState.getDataEntry(MIN_PRICE));
-        if (maxPriceValue < minPrice) {
+        if (minPrice > maxPriceValue) {
             telegramSenderService.send(chatId, WRONG_MAX_PRICE_MESSAGE_2);
             return Result.of(userState);
         }

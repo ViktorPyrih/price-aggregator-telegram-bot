@@ -12,6 +12,7 @@ public interface CommonConstants {
     String MAX_PRICE = "maxPrice";
     String BACK = "\uD83D\uDD19";
     String COMPLETE = "✔";
+    String RESET = "↩";
     String FILTER_KEY_PREFIX = "filter.key.";
 
 }

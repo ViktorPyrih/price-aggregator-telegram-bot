@@ -10,15 +10,17 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserStateService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
-import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.BACK;
-import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.COMPLETE;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*;
 
 @Component
 public class StepProcessor {
+
+    private static final Set<String> COMMANDS = Set.of(BACK, COMPLETE, RESET);
 
     private final UserStateService userStateService;
     private final Map<Integer, Map<Integer, Step>> steps;
@@ -60,7 +62,7 @@ public class StepProcessor {
             userStateService.save(newUserState);
 
             String text = update.getMessage().getText();
-            if (!BACK.equals(text) && !COMPLETE.equals(text)) {
+            if (!COMMANDS.contains(text)) {
                 var nextStep = findStep(newUserState);
                 if (nextStep.isPresent()) {
                     nextStep.get().onStart(update, newUserState);
