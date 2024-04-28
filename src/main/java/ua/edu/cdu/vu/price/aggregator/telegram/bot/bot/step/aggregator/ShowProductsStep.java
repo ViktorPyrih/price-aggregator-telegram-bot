@@ -96,9 +96,12 @@ public class ShowProductsStep implements Step {
         ScheduledFuture<?> future = taskScheduler.scheduleAtFixedRate(() -> telegramSenderService.sendUnchecked(chatId, SEARCHING_FOR_PRODUCTS_MESSAGE, true),
                 0, searchProductsMessageSeconds, TimeUnit.SECONDS);
 
-        var products = getProducts(userState, page);
-
-        future.cancel(true);
+        Pageable<Product> products;
+        try {
+            products = getProducts(userState, page);
+        } finally {
+            future.cancel(true);
+        }
 
         sendProducts(chatId, products);
 
