@@ -11,8 +11,8 @@ resilience4j:
   ratelimiter:
     instances:
       telegram:
-        limit-for-period: 60
-        limit-refresh-period: 1m
+        limit-for-period: 1
+        limit-refresh-period: 1s
         timeout-duration: 1m
         register-health-indicator: true
 price-aggregator-telegram-bot:
