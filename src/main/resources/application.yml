@@ -7,6 +7,14 @@ spring:
     redis:
       host: localhost
       port: 6379
+resilience4j:
+  ratelimiter:
+    instances:
+      telegram:
+        limit-for-period: 60
+        limit-refresh-period: 1m
+        timeout-duration: 1m
+        register-health-indicator: true
 price-aggregator-telegram-bot:
   configuration:
     token: ENC(vCL5XHOfLld/iVbWxPegxyw4+71GhZGAEpzveiAEJElYcJhUaQ46ZYisSZOk77pi3OUf3GWSzXEULATQESskgACHSrU1btbaf8OIRYsypMY=)

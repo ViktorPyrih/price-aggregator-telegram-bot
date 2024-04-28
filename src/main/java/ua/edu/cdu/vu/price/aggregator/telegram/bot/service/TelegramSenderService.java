@@ -1,5 +1,6 @@
 package ua.edu.cdu.vu.price.aggregator.telegram.bot.service;
 
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -20,6 +21,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@RateLimiter(name = "telegram")
 public class TelegramSenderService {
 
     private final ObjectProvider<PriceAggregatorTelegramBot> botProvider;

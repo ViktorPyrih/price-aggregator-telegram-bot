@@ -1,5 +1,6 @@
 package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command;
 
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.ElementType;
@@ -12,6 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Command {
 
+    @AliasFor(annotation = Component.class)
     String value();
 
 }
