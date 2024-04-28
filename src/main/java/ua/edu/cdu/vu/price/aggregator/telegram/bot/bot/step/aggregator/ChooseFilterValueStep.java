@@ -42,7 +42,7 @@ public class ChooseFilterValueStep extends FilterStep {
     }
 
     @Override
-    public void onStart(Update update, UserState userState) throws TelegramApiException {
+    public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
 
         var filters = getFilters(userState);
@@ -50,6 +50,8 @@ public class ChooseFilterValueStep extends FilterStep {
         var filterValues = extractValues(filters, filterKey);
 
         telegramSenderService.send(chatId, CHOOSE_FILTER_VALUES_MESSAGE, Buttons.keyboard(filterValues, true, true, true));
+
+        return Result.of(userState);
     }
 
     @Override
@@ -69,7 +71,8 @@ public class ChooseFilterValueStep extends FilterStep {
 
             String userStateFilterKey = FILTER_KEY_PREFIX + filterKey;
             if (userState.hasDataEntry(userStateFilterKey)) {
-                Set<String> storedFilterValues = objectMapper.readValue(userState.getDataEntry(userStateFilterKey), new TypeReference<>() {});
+                Set<String> storedFilterValues = objectMapper.readValue(userState.getDataEntry(userStateFilterKey), new TypeReference<>() {
+                });
                 filterValuesToStore.addAll(storedFilterValues);
             }
 

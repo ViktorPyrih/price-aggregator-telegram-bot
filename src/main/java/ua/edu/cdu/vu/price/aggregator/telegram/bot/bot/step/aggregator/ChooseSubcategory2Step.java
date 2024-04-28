@@ -34,7 +34,7 @@ public class ChooseSubcategory2Step implements Step {
     }
 
     @Override
-    public void onStart(Update update, UserState userState) throws TelegramApiException {
+    public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
 
         String marketplace = userState.getDataEntry(MARKETPLACE);
@@ -42,6 +42,8 @@ public class ChooseSubcategory2Step implements Step {
         String subcategory = userState.getDataEntry(SUBCATEGORY);
         var subcategories = priceAggregatorService.getSubcategories(marketplace, category, subcategory);
         telegramSenderService.send(chatId, CHOOSE_SUBCATEGORY_MESSAGE, Buttons.keyboard(subcategories, true));
+
+        return Result.of(userState);
     }
 
     @Override

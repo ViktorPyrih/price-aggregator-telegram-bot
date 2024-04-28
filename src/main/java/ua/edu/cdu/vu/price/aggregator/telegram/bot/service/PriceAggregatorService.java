@@ -8,9 +8,14 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.PriceAggregatorApiClient;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.request.ProductsRequest;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.response.FiltersResponse;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.response.ProductsResponse;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Filter;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Pageable;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Product;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.mapper.FilterMapper;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.mapper.ProductMapper;
 
 import java.util.List;
 
@@ -31,6 +36,7 @@ public class PriceAggregatorService {
 
     private final PriceAggregatorApiClient apiClient;
     private final FilterMapper filterMapper;
+    private final ProductMapper productMapper;
 
     @Cacheable("marketplaces")
     public List<String> getMarketplaces() {
@@ -56,5 +62,16 @@ public class PriceAggregatorService {
     public List<Filter> getFilters(String marketplace, String category, String subcategory1, String subcategory2) {
         FiltersResponse response = apiClient.getFilters(marketplace, category, subcategory1, subcategory2);
         return filterMapper.convertToDomain(response.filters());
+    }
+
+    public Pageable<Product> getProducts(String marketplace, String category, String subcategory1, String subcategory2, List<Filter> filters, double minPrice, double maxPrice, int page) {
+        ProductsRequest request = ProductsRequest.builder()
+                .minPrice(minPrice)
+                .maxPrice(maxPrice)
+                .filters(filterMapper.convertToRequest(filters))
+                .build();
+        ProductsResponse response = apiClient.getProducts(marketplace, category, subcategory1, subcategory2, request, page);
+
+        return productMapper.convertToDomain(response);
     }
 }

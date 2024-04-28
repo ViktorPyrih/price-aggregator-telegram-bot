@@ -35,10 +35,12 @@ public class ChooseMarketplaceStep implements Step {
     }
 
     @Override
-    public void onStart(Update update, UserState userState) throws TelegramApiException {
+    public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
         var marketplaces = priceAggregatorService.getMarketplaces();
         telegramSenderService.send(chatId, CHOOSE_MARKETPLACE_MESSAGE, Buttons.keyboard(marketplaces));
+
+        return Result.of(userState);
     }
 
     @Override

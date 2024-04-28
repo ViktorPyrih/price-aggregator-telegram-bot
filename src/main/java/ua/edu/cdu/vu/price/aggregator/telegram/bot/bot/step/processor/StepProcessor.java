@@ -31,32 +31,34 @@ public class StepProcessor {
                 .collect(groupingBy(Step::flowId, toMap(Step::stepId, Function.identity())));
     }
 
-    public void process(UserState userState, Update update) throws TelegramApiException {
-        process(userState, update, false);
+    public void process(Update update, UserState userState) throws TelegramApiException {
+        process(update, userState, false);
     }
 
-    public void process(UserState userState, Update update, boolean isInitial) throws TelegramApiException {
+    public void process(Update update, UserState userState, boolean isInitial) throws TelegramApiException {
         if (isInitial) {
             Step step = getStep(userState);
-            userStateService.save(userState);
-            step.onStart(update, userState);
+            onStart(update, userState, step);
         } else if (BACK.equals(update.getMessage().getText())) {
             UserState previousStepUserState = userState.previousStep();
-            Step step = getStep(previousStepUserState);
-            process(previousStepUserState, update, step);
+            processStep(update, previousStepUserState);
         } else {
-            Step step = getStep(userState);
-            process(userState, update, step);
+            processStep(update, userState);
         }
     }
 
-    private void process(UserState userState, Update update, Step step) throws TelegramApiException {
+    private void processStep(Update update, UserState userState) throws TelegramApiException {
+        Step step = getStep(userState);
+        process(update, userState, step);
+    }
+
+    private void process(Update update, UserState userState, Step step) throws TelegramApiException {
 
         var result = step.processUpdate(update, userState);
 
         if (result.isUserStateAndNextStepIdPresent()) {
             UserState newUserState = result.getUserState().withStepId(result.getNextStepId());
-            process(newUserState, update, getStep(newUserState));
+            process(update, newUserState, getStep(newUserState));
         } else if (result.isUserStatePresent()) {
             UserState newUserState = result.getUserState();
             userStateService.save(newUserState);
@@ -65,12 +67,17 @@ public class StepProcessor {
             if (!COMMANDS.contains(text)) {
                 var nextStep = findStep(newUserState);
                 if (nextStep.isPresent()) {
-                    nextStep.get().onStart(update, newUserState);
+                    onStart(update, newUserState, nextStep.get());
                 }
             }
         } else {
             userStateService.delete(userState);
         }
+    }
+
+    private void onStart(Update update, UserState userState, Step step) throws TelegramApiException {
+        UserState newUserState = step.onStart(update, userState).getUserState();
+        userStateService.save(newUserState);
     }
 
     private Step getStep(UserState userState) {

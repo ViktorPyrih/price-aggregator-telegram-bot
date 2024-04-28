@@ -17,6 +17,7 @@ public interface Step {
     int CHOOSE_FILTER_VALUE_STEP_ID = 6;
     int CHOOSE_MIN_PRICE_STEP_ID = 7;
     int CHOOSE_MAX_PRICE_STEP_ID = 8;
+    int SHOW_PRODUCTS_STEP_ID = 9;
 
     @Value(staticConstructor = "of")
     class Result {
@@ -56,15 +57,14 @@ public interface Step {
         return process(update, userState);
     }
 
-    void onStart(Update update, UserState userState) throws TelegramApiException;
+    Result onStart(Update update, UserState userState) throws TelegramApiException;
 
     Result process(Update update, UserState userState) throws TelegramApiException;
 
     Result processBack(Update update, UserState userState) throws TelegramApiException;
 
     default Result processComplete(Update update, UserState userState) throws TelegramApiException {
-        onStart(update, userState);
-        return Result.of(userState);
+        return onStart(update, userState);
     }
 
     default Result processReset(Update update, UserState userState) throws TelegramApiException {

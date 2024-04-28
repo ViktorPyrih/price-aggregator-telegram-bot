@@ -32,11 +32,13 @@ public class ChooseFilterKeyStep extends FilterStep {
     }
 
     @Override
-    public void onStart(Update update, UserState userState) throws TelegramApiException {
+    public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
 
         var filters = getFilters(userState);
         telegramSenderService.send(chatId, CHOOSE_FILTER_MESSAGE, Buttons.keyboard(extractKeys(filters), true, true, true));
+
+        return Result.of(userState);
     }
 
     @Override

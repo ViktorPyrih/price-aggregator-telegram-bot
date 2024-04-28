@@ -10,6 +10,7 @@ public interface CommonConstants {
     String FILTER_KEY = "filterKey";
     String MIN_PRICE = "minPrice";
     String MAX_PRICE = "maxPrice";
+    String PAGES_COUNT = "pagesCount";
     String BACK = "\uD83D\uDD19";
     String COMPLETE = "✔";
     String RESET = "↩";

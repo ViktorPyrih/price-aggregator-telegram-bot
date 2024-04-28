@@ -1,8 +1,9 @@
 package ua.edu.cdu.vu.price.aggregator.telegram.bot.domain;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -42,8 +43,23 @@ public record UserState(long userId, int flowId, int stepId, Map<String, String>
         return new UserState(userId, flowId, stepId, updatedData);
     }
 
+    public UserState addDataEntry(String key, int value) {
+        return addDataEntry(key, String.valueOf(value));
+    }
+
     public String getDataEntry(String key) {
         return findDataEntry(key).orElse(null);
+    }
+
+    public Map<String, String> getAllDataEntriesByPrefix(String prefix) {
+        if (isNull(data)) {
+            return Collections.emptyMap();
+        }
+
+        return data.entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(prefix))
+                .map(entry -> Map.entry(StringUtils.substringAfter(entry.getKey(), prefix), entry.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Optional<String> findDataEntry(String key) {

@@ -34,13 +34,15 @@ public class ChooseCategoryStep implements Step {
     }
 
     @Override
-    public void onStart(Update update, UserState userState) throws TelegramApiException {
+    public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
 
         String marketplace = userState.getDataEntry(MARKETPLACE);
         var categories = priceAggregatorService.getCategories(marketplace);
 
         telegramSenderService.send(chatId, CHOOSE_CATEGORY_MESSAGE, Buttons.keyboard(categories, true));
+
+        return Result.of(userState);
     }
 
     @Override

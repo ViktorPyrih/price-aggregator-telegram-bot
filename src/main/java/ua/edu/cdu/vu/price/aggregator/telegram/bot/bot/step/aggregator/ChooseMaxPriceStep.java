@@ -7,6 +7,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.Step;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.TelegramSenderService;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Buttons;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.util.NumberUtils;
 
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getChatId;
@@ -32,9 +34,11 @@ public class ChooseMaxPriceStep implements Step {
     }
 
     @Override
-    public void onStart(Update update, UserState userState) throws TelegramApiException {
+    public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
-        telegramSenderService.send(chatId, CHOOSE_MAX_PRICE_MESSAGE);
+        telegramSenderService.send(chatId, CHOOSE_MAX_PRICE_MESSAGE, Buttons.keyboard(BACK));
+
+        return Result.of(userState);
     }
 
     @Override
@@ -42,7 +46,7 @@ public class ChooseMaxPriceStep implements Step {
         long chatId = getChatId(update);
 
         String maxPrice = update.getMessage().getText();
-        Double maxPriceValue = parseDouble(maxPrice);
+        Double maxPriceValue = NumberUtils.parseDouble(maxPrice);
         if (maxPriceValue.isNaN()) {
             telegramSenderService.send(chatId, maxPrice + WRONG_MAX_PRICE_MESSAGE);
             return Result.of(userState);
@@ -61,13 +65,5 @@ public class ChooseMaxPriceStep implements Step {
     public Result processBack(Update update, UserState userState) throws TelegramApiException {
         onStart(update, userState);
         return Result.of(userState.removeDataEntry(MAX_PRICE));
-    }
-
-    private static Double parseDouble(String value) {
-        try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            return Double.NaN;
-        }
     }
 }

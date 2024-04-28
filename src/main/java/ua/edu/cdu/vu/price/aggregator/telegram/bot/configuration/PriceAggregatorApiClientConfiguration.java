@@ -12,6 +12,7 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.configuration.properties.ApiC
 @Configuration
 public class PriceAggregatorApiClientConfiguration {
 
+    private static final int MAX_IN_MEMORY_SIZE_BYTES = 10 * 1024 * 1024;
     private static final String X_API_KEY = "x-api-key";
 
     @Bean
@@ -25,6 +26,7 @@ public class PriceAggregatorApiClientConfiguration {
         return WebClient.builder()
                 .baseUrl(priceAggregatorApiClientProperties.getUrl())
                 .defaultHeader(X_API_KEY, priceAggregatorApiClientProperties.getApiKey())
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE_BYTES))
                 .build();
     }
 

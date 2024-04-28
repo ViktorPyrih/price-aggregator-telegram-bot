@@ -30,7 +30,7 @@ public class TelegramBotService {
             } else if (nonNull(update.getMessage().getText())) {
                 var userState = userStateService.findUserState(update.getMessage().getFrom().getId());
                 if (userState.isPresent()) {
-                    stepProcessor.process(userState.get(), update);
+                    stepProcessor.process(update, userState.get());
                 }
             }
         } catch (TelegramApiException e) {
