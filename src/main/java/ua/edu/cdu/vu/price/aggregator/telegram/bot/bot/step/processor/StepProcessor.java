@@ -64,7 +64,7 @@ public class StepProcessor {
             userStateService.save(newUserState);
 
             String text = update.getMessage().getText();
-            if (!COMMANDS.contains(text)) {
+            if (!COMMANDS.contains(text) && newUserState.stepId() != userState.stepId()) {
                 var nextStep = findStep(newUserState);
                 if (nextStep.isPresent()) {
                     onStart(update, newUserState, nextStep.get());

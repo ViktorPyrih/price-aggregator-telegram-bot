@@ -73,4 +73,12 @@ public class TelegramSenderService {
             log.error("Failed to send a message", e);
         }
     }
+
+    public void sendUnchecked(long chatId, String message, boolean removeReplyKeyboard) {
+        try {
+            send(chatId, message, removeReplyKeyboard);
+        } catch (TelegramApiException e) {
+            log.error("Failed to send a message", e);
+        }
+    }
 }

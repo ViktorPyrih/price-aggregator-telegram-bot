@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -21,6 +22,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -45,6 +49,10 @@ public class ShowProductsStep implements Step {
     private final PriceAggregatorService priceAggregatorService;
     private final FilterMapper filterMapper;
     private final ObjectMapper objectMapper;
+    private final ScheduledExecutorService taskScheduler;
+
+    @Value("${price-aggregator-telegram-bot.search-products-message.rate-seconds:30}")
+    private int searchProductsMessageSeconds;
 
     @Override
     public int flowId() {
@@ -84,9 +92,13 @@ public class ShowProductsStep implements Step {
 
     private Result process(Update update, UserState userState, int page) throws TelegramApiException {
         long chatId = getChatId(update);
-        telegramSenderService.send(chatId, SEARCHING_FOR_PRODUCTS_MESSAGE, true);
+
+        ScheduledFuture<?> future = taskScheduler.scheduleAtFixedRate(() -> telegramSenderService.sendUnchecked(chatId, SEARCHING_FOR_PRODUCTS_MESSAGE, true),
+                0, searchProductsMessageSeconds, TimeUnit.SECONDS);
 
         var products = getProducts(userState, page);
+
+        future.cancel(true);
 
         sendProducts(chatId, products);
 
