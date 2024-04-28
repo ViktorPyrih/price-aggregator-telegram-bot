@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static java.util.function.Predicate.not;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.ImageUtils.decode;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.NumberUtils.tryParseToInt;
@@ -116,16 +115,6 @@ public class ShowProductsStep implements Step {
         telegramSenderService.send(chatId, product.getLink(), images);
     }
 
-    private List<Filter> extractFilters(UserState userState, String subcategory2) {
-        return filterMapper.convertToDomain(userState.getAllDataEntriesByPrefix(FILTER_KEY_PREFIX).entrySet().stream()
-                .map(entry -> Map.entry(entry.getKey(), parseFilters(entry.getValue())))
-                .map(entry -> Map.entry(entry.getKey(), entry.getValue().stream()
-                        .filter(value -> !value.equals(subcategory2))
-                        .toList()))
-                .filter(not(entry -> entry.getValue().isEmpty()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
-    }
-
     @SneakyThrows
     private List<String> parseFilters(String filters) {
         return objectMapper.readValue(filters, new TypeReference<>() {
@@ -137,11 +126,17 @@ public class ShowProductsStep implements Step {
         String category = userState.getDataEntry(CATEGORY);
         String subcategory = userState.getDataEntry(SUBCATEGORY);
         String subcategory2 = userState.getDataEntry(SUBCATEGORY2);
-        var filters = extractFilters(userState, subcategory2);
+        var filters = extractFilters(userState);
         double minPrice = Double.parseDouble(userState.getDataEntry(MIN_PRICE));
         double maxPrice = Double.parseDouble(userState.getDataEntry(MAX_PRICE));
 
         return priceAggregatorService.getProducts(marketplace, category, subcategory, subcategory2, filters, minPrice, maxPrice, page);
+    }
+
+    private List<Filter> extractFilters(UserState userState) {
+        return filterMapper.convertToDomain(userState.getAllDataEntriesByPrefix(FILTER_KEY_PREFIX).entrySet().stream()
+                .map(entry -> Map.entry(entry.getKey(), parseFilters(entry.getValue())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
     private static List<String> pages(int count) {
