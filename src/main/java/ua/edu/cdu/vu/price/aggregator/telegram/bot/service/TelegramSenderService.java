@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -26,19 +27,19 @@ public class TelegramSenderService {
 
     private final ObjectProvider<PriceAggregatorTelegramBot> botProvider;
 
-    public void send(long chatId, String message, boolean removeReplyKeyboard) throws TelegramApiException {
-        botProvider.getObject().execute(SendMessage.builder()
+    public int send(long chatId, String message, boolean removeReplyKeyboard) throws TelegramApiException {
+        return botProvider.getObject().execute(SendMessage.builder()
                 .chatId(chatId)
                 .text(message)
                 .parseMode(ParseMode.HTML)
                 .replyMarkup(removeReplyKeyboard
                         ? ReplyKeyboardRemove.builder().removeKeyboard(true).build()
                         : null)
-                .build());
+                .build()).getMessageId();
     }
 
-    public void send(long chatId, String message) throws TelegramApiException {
-        send(chatId, message, false);
+    public int send(long chatId, String message) throws TelegramApiException {
+        return send(chatId, message, false);
     }
 
     public void send(long chatId, String text, ReplyKeyboardMarkup markup) throws TelegramApiException {
@@ -67,11 +68,7 @@ public class TelegramSenderService {
     }
 
     public void sendUnchecked(long chatId, String message) {
-        try {
-            send(chatId, message);
-        } catch (TelegramApiException e) {
-            log.error("Failed to send a message", e);
-        }
+        sendUnchecked(chatId, message, false);
     }
 
     public void sendUnchecked(long chatId, String message, boolean removeReplyKeyboard) {
@@ -79,6 +76,23 @@ public class TelegramSenderService {
             send(chatId, message, removeReplyKeyboard);
         } catch (TelegramApiException e) {
             log.error("Failed to send a message", e);
+        }
+    }
+
+    public void edit(long chatId, int messageId, String message) throws TelegramApiException {
+        botProvider.getObject().execute(EditMessageText.builder()
+                        .chatId(chatId)
+                        .messageId(messageId)
+                        .parseMode(ParseMode.HTML)
+                        .text(message)
+                .build());
+    }
+
+    public void editUnchecked(long chatId, int messageId, String message) {
+        try {
+            edit(chatId, messageId, message);
+        } catch (TelegramApiException e) {
+            log.error("Failed to edit a message", e);
         }
     }
 }

@@ -16,6 +16,7 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.mapper.FilterMapper;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.PriceAggregatorService;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.TelegramSenderService;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.task.TelegramEditMessageTask;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Buttons;
 
 import java.util.LinkedHashMap;
@@ -51,8 +52,8 @@ public class ShowProductsStep implements Step {
     private final ObjectMapper objectMapper;
     private final ScheduledExecutorService taskScheduler;
 
-    @Value("${price-aggregator-telegram-bot.search-products-message.rate-seconds:30}")
-    private int searchProductsMessageSeconds;
+    @Value("${price-aggregator-telegram-bot.scheduling.search-products-message.frequency:5}")
+    private int searchProductsMessageFrequency;
 
     @Override
     public int flowId() {
@@ -93,8 +94,10 @@ public class ShowProductsStep implements Step {
     private Result process(Update update, UserState userState, int page) throws TelegramApiException {
         long chatId = getChatId(update);
 
-        ScheduledFuture<?> future = taskScheduler.scheduleAtFixedRate(() -> telegramSenderService.sendUnchecked(chatId, SEARCHING_FOR_PRODUCTS_MESSAGE, true),
-                0, searchProductsMessageSeconds, TimeUnit.SECONDS);
+        int messageId = telegramSenderService.send(chatId, SEARCHING_FOR_PRODUCTS_MESSAGE);
+
+        TelegramEditMessageTask task = new TelegramEditMessageTask(messageId, chatId, searchProductsMessageFrequency, telegramSenderService);
+        ScheduledFuture<?> future = taskScheduler.scheduleAtFixedRate(task, searchProductsMessageFrequency, searchProductsMessageFrequency, TimeUnit.SECONDS);
 
         Pageable<Product> products;
         try {
