@@ -8,13 +8,16 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.processor.StepProcessor;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserStateService;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 import static java.util.Objects.nonNull;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getChatId;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TelegramBotService {
+public class TelegramBotService implements Consumer<List<Update>> {
 
     private static final String COMMAND_PREFIX = "/";
 
@@ -23,7 +26,8 @@ public class TelegramBotService {
     private final UserStateService userStateService;
     private final TelegramSenderService telegramSenderService;
 
-    public void process(Update update) {
+    public void accept(List<Update> updates) {
+        Update update = updates.getLast();
         try {
             if (update.hasCallbackQuery() || isCommand(update)) {
                 botCommandService.processCommand(update);

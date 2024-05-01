@@ -11,6 +11,9 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @Getter
 @Setter
 @Validated
@@ -26,5 +29,10 @@ public class PriceAggregatorTelegramBotConfiguration {
     @Bean
     public TelegramBotsApi telegramBotsApi() throws TelegramApiException {
         return new TelegramBotsApi(DefaultBotSession.class);
+    }
+
+    @Bean
+    public ExecutorService taskExecutor() {
+        return Executors.newVirtualThreadPerTaskExecutor();
     }
 }
