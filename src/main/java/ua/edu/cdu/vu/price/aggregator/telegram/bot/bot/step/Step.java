@@ -9,6 +9,10 @@ import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*
 
 public interface Step {
 
+    // search
+    int ENTER_QUERY_STEP_ID = 1;
+
+    // aggregator
     int CHOOSE_MARKETPLACE_STEP_ID = 1;
     int CHOOSE_CATEGORY_STEP_ID = 2;
     int CHOOSE_SUBCATEGORY_STEP_ID = 3;

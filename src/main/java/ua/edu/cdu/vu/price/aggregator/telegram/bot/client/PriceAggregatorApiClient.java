@@ -32,4 +32,7 @@ public interface PriceAggregatorApiClient {
 
     @PostExchange("/marketplaces/{marketplace}/products")
     ProductsResponse getProducts(@PathVariable String marketplace, @RequestParam String category, @RequestParam String subcategory1, @RequestParam String subcategory2, @RequestBody ProductsRequest productsRequest, @RequestParam int page);
+
+    @GetExchange("/search")
+    ProductsResponse search(@RequestParam String query);
 }

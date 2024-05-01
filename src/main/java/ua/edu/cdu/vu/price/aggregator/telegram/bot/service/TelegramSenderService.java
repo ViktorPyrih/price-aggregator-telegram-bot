@@ -17,7 +17,9 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.PriceAggregatorTelegramBot;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -51,18 +53,26 @@ public class TelegramSenderService {
                 .build());
     }
 
-    public void send(long chatId, String caption, Map<String, byte[]> images) throws TelegramApiException {
+    public void send(long chatId, String caption, List<String> imageUrls, Map<String, byte[]> imageData) throws TelegramApiException {
         botProvider.getObject().execute(SendMediaGroup.builder()
                 .chatId(chatId)
-                .medias(images.entrySet().stream()
-                        .map(image -> createInputMedia(caption, image.getKey(), image.getValue()))
-                        .toList())
-                .build());
+                .medias(Stream.concat(
+                                imageUrls.stream().map(url -> createInputMedia(caption, url)),
+                                imageData.entrySet().stream().map(image -> createInputMedia(caption, image.getKey(), image.getValue())))
+                        .toList()
+                ).build());
     }
 
     private InputMedia createInputMedia(String caption, String name, byte[] content) {
         InputMediaPhoto photo = new InputMediaPhoto();
         photo.setMedia(new ByteArrayInputStream(content), name);
+        photo.setCaption(caption);
+        return photo;
+    }
+
+    private InputMedia createInputMedia(String caption, String url) {
+        InputMediaPhoto photo = new InputMediaPhoto();
+        photo.setMedia(url);
         photo.setCaption(caption);
         return photo;
     }
@@ -81,10 +91,10 @@ public class TelegramSenderService {
 
     public void edit(long chatId, int messageId, String message) throws TelegramApiException {
         botProvider.getObject().execute(EditMessageText.builder()
-                        .chatId(chatId)
-                        .messageId(messageId)
-                        .parseMode(ParseMode.HTML)
-                        .text(message)
+                .chatId(chatId)
+                .messageId(messageId)
+                .parseMode(ParseMode.HTML)
+                .text(message)
                 .build());
     }
 

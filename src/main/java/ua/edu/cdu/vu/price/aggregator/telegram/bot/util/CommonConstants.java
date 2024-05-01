@@ -3,6 +3,8 @@ package ua.edu.cdu.vu.price.aggregator.telegram.bot.util;
 public interface CommonConstants {
 
     int AGGREGATOR_FLOW_ID = 1;
+    int SEARCH_FLOW_ID = 2;
+
     String MARKETPLACE = "marketplace";
     String CATEGORY = "category";
     String SUBCATEGORY = "subcategory";

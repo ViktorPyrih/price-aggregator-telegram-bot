@@ -8,10 +8,11 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.Command;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.FlowService;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.TelegramSenderService;
 
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.BotCommand.START;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.AGGREGATOR_FLOW_ID;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getChatId;
 
-@Command(BotCommand.START)
+@Command(START)
 @RequiredArgsConstructor
 public class StartCommand implements BotCommand {
 
@@ -28,6 +29,6 @@ public class StartCommand implements BotCommand {
 
         flowService.start(AGGREGATOR_FLOW_ID, update);
 
-        return BotCommand.Result.empty();
+        return Result.empty();
     }
 }
