@@ -14,6 +14,7 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.response.ProductsRespo
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Filter;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Pageable;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Product;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.TooManyRequestsException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.mapper.FilterMapper;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.mapper.ProductMapper;
 
@@ -70,9 +71,12 @@ public class PriceAggregatorService {
                 .maxPrice(maxPrice)
                 .filters(filterMapper.convertToRequest(filters))
                 .build();
-        ProductsResponse response = apiClient.getProducts(marketplace, category, subcategory1, subcategory2, request, page);
-
-        return productMapper.convertToDomain(response);
+        try {
+            ProductsResponse response = apiClient.getProducts(marketplace, category, subcategory1, subcategory2, request, page);
+            return productMapper.convertToDomain(response);
+        } catch (WebClientResponseException.TooManyRequests e) {
+            throw new TooManyRequestsException(e);
+        }
     }
 
     public Pageable<Product> search(String query) {

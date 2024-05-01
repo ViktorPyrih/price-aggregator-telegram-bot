@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.processor.StepProcessor;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.TooManyRequestsException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserStateService;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class TelegramBotService implements Consumer<List<Update>> {
 
     public void accept(List<Update> updates) {
         Update update = updates.getLast();
+        long chatId = getChatId(update);
         try {
             if (update.hasCallbackQuery() || isCommand(update)) {
                 botCommandService.processCommand(update);
@@ -39,9 +41,12 @@ public class TelegramBotService implements Consumer<List<Update>> {
             }
         } catch (TelegramApiException e) {
             log.error("Request to Telegram API failed", e);
-        } catch (RuntimeException e) {
+        } catch (TooManyRequestsException e) {
+            log.error("API abuse detected: too many requests", e);
+            telegramSenderService.sendUnchecked(chatId, e.getMessage());
+        }catch (RuntimeException e) {
             log.error("Internal error occurred", e);
-            telegramSenderService.sendUnchecked(getChatId(update), "Something went wrong on the server side. The error was logged and will be fixed soon");
+            telegramSenderService.sendUnchecked(chatId, "Something went wrong on the server side. The error was logged and will be fixed soon");
         }
     }
 
