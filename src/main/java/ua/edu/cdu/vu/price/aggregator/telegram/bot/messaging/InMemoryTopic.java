@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -15,7 +16,7 @@ public class InMemoryTopic<KEY, MESSAGE> implements MessageTopic<KEY, MESSAGE> {
 
     @NonNull
     private final String name;
-    private final Map<KEY, BlockingQueue<MESSAGE>> partitions = new WeakHashMap<>();
+    private final Map<KEY, BlockingQueue<MESSAGE>> partitions = new ConcurrentHashMap<>();
 
     @Override
     public void produce(@NonNull KEY key, @NonNull MESSAGE message) {
