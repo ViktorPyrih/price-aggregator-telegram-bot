@@ -14,7 +14,7 @@ public class MessageConsumerFactory {
     private final MessageTopic<Long, Update> updateTopic;
     private final TelegramBotService telegramBotService;
 
-    @Value("${price-aggregator-telegram-bot.message-buffering.timeout-ms:2000}")
+    @Value("${price-aggregator-telegram-bot.message-buffering.timeout-ms:500}")
     private long bufferingTimeout;
 
     public BatchMessageConsumer<Long, Update> createUpdateConsumer(long userId) {

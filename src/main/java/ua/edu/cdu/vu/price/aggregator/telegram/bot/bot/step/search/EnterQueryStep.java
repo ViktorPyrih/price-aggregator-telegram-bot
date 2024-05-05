@@ -36,7 +36,7 @@ public class EnterQueryStep implements Step {
     @Override
     public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
-        telegramSenderService.send(chatId, ENTER_QUERY_MESSAGE, true);
+        telegramSenderService.sendMessage(chatId, ENTER_QUERY_MESSAGE, true);
 
         return Result.of(userState);
     }

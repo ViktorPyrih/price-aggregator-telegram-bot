@@ -5,10 +5,13 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.Step;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Marketplace;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.PriceAggregatorService;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.TelegramSenderService;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Buttons;
+
+import java.util.Map;
 
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getChatId;
@@ -35,13 +38,20 @@ public class ChooseSubcategoryStep implements Step {
 
     @Override
     public Result onStart(Update update, UserState userState) throws TelegramApiException {
+        String marketplaceEntry = userState.getDataEntry(MARKETPLACE);
+
+        var subcategories = userState.getAllDataEntriesByPrefix(SUBCATEGORY);
+
+        Marketplace marketplace = priceAggregatorService.getMarketplaces().get(marketplaceEntry);
+        if (subcategories.size() == marketplace.getSubcategoriesCount()) {
+            return Result.of(userState.nextStep());
+        }
+
         long chatId = getChatId(update);
 
-        String marketplace = userState.getDataEntry(MARKETPLACE);
         String category = userState.getDataEntry(CATEGORY);
-
-        var subcategories = priceAggregatorService.getSubcategories(marketplace, category);
-        telegramSenderService.send(chatId, CHOOSE_SUBCATEGORY_MESSAGE, Buttons.keyboard(subcategories, true));
+        var nextSubcategories = priceAggregatorService.getSubcategories(marketplaceEntry, category, subcategories);
+        telegramSenderService.sendMessage(chatId, CHOOSE_SUBCATEGORY_MESSAGE, Buttons.keyboard(nextSubcategories, true));
 
         return Result.of(userState);
     }
@@ -50,24 +60,29 @@ public class ChooseSubcategoryStep implements Step {
     public Result process(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
 
-        String marketplace = userState.getDataEntry(MARKETPLACE);
+        String marketplaceEntry = userState.getDataEntry(MARKETPLACE);
         String category = userState.getDataEntry(CATEGORY);
+        var subcategories = userState.getAllDataEntriesByPrefix(SUBCATEGORY);
 
-        var subcategories = priceAggregatorService.getSubcategories(marketplace, category);
+        var expectedSubcategories = priceAggregatorService.getSubcategories(marketplaceEntry, category, subcategories);
         String subcategory = update.getMessage().getText();
 
-        if (subcategories.contains(subcategory)) {
-            return Result.of(userState.nextStep().addDataEntry(SUBCATEGORY, subcategory));
+        if (expectedSubcategories.contains(subcategory)) {
+            return Result.of(userState.addDataEntry(getNextSubcategoryKey(subcategories), subcategory));
         }
 
-        telegramSenderService.send(chatId, WRONG_SUBCATEGORY_MESSAGE + String.join(", ", subcategories));
+        telegramSenderService.sendMessage(chatId, WRONG_SUBCATEGORY_MESSAGE + String.join(", ", expectedSubcategories));
 
         return Result.of(userState);
     }
 
     @Override
     public Result processBack(Update update, UserState userState) throws TelegramApiException {
-        onStart(update, userState);
-        return Result.of(userState.removeDataEntry(SUBCATEGORY));
+        onStart(update, userState.removeDataEntriesByPrefix(SUBCATEGORY));
+        return Result.of(userState.removeDataEntriesByPrefix(SUBCATEGORY));
+    }
+
+    private String getNextSubcategoryKey(Map<String, String> subcategories) {
+        return SUBCATEGORY + (subcategories.size() + 1);
     }
 }

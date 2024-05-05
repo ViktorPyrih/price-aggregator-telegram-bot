@@ -25,7 +25,7 @@ public class StartCommand implements BotCommand {
     public BotCommand.Result execute(Update update) throws TelegramApiException {
         long chatId = getChatId(update);
         String username = update.getMessage().getFrom().getFirstName();
-        telegramSenderService.send(chatId, GREETING.formatted(username));
+        telegramSenderService.sendMessage(chatId, GREETING.formatted(username));
 
         flowService.start(AGGREGATOR_FLOW_ID, update);
 

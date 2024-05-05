@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,19 +24,19 @@ public class Buttons {
         return keyboard(List.of(buttons));
     }
 
-    public static ReplyKeyboardMarkup keyboard(List<String> buttons) {
+    public static ReplyKeyboardMarkup keyboard(Collection<String> buttons) {
         return keyboard(buttons, false);
     }
 
-    public static ReplyKeyboardMarkup keyboard(List<String> buttons, boolean addBackButton) {
+    public static ReplyKeyboardMarkup keyboard(Collection<String> buttons, boolean addBackButton) {
         return keyboard(buttons, addBackButton, false);
     }
 
-    public static ReplyKeyboardMarkup keyboard(List<String> buttons, boolean addBackButton, boolean addCompleteButton) {
+    public static ReplyKeyboardMarkup keyboard(Collection<String> buttons, boolean addBackButton, boolean addCompleteButton) {
         return keyboard(buttons, addBackButton, addCompleteButton, false);
     }
 
-    public static ReplyKeyboardMarkup keyboard(List<String> buttons, boolean addBackButton, boolean addCompleteButton, boolean addResetButton) {
+    public static ReplyKeyboardMarkup keyboard(Collection<String> buttons, boolean addBackButton, boolean addCompleteButton, boolean addResetButton) {
         return ReplyKeyboardMarkup.builder()
                 .isPersistent(true)
                 .resizeKeyboard(true)
@@ -43,7 +44,7 @@ public class Buttons {
                 .build();
     }
 
-    private static List<KeyboardRow> rows(List<String> buttons, boolean addBackButton, boolean addCompleteButton, boolean addResetButton) {
+    private static List<KeyboardRow> rows(Collection<String> buttons, boolean addBackButton, boolean addCompleteButton, boolean addResetButton) {
         var rows = buttons.stream()
                 .map(Buttons::row)
                 .collect(Collectors.toList());

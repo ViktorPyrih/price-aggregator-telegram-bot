@@ -49,7 +49,7 @@ public class ChooseFilterValueStep extends FilterStep {
         String filterKey = userState.getDataEntry(FILTER_KEY);
         var filterValues = extractValues(filters, filterKey);
 
-        telegramSenderService.send(chatId, CHOOSE_FILTER_VALUES_MESSAGE, Buttons.keyboard(filterValues, true, true, true));
+        telegramSenderService.sendMessage(chatId, CHOOSE_FILTER_VALUES_MESSAGE, Buttons.keyboard(filterValues, true, true, true));
 
         return Result.of(userState);
     }
@@ -76,12 +76,12 @@ public class ChooseFilterValueStep extends FilterStep {
                 filterValuesToStore.addAll(storedFilterValues);
             }
 
-            telegramSenderService.send(chatId, FILTER_SELECTED_TEMPLATE.formatted(filterKey, filterValuesToStore));
+            telegramSenderService.sendMessage(chatId, FILTER_SELECTED_TEMPLATE.formatted(filterKey, filterValuesToStore));
 
             return Result.of(userState.addDataEntry(userStateFilterKey, objectMapper.writeValueAsString(filterValuesToStore)));
         }
 
-        telegramSenderService.send(chatId, WRONG_FILTER_VALUE_MESSAGE + String.join(", ", filterValues));
+        telegramSenderService.sendMessage(chatId, WRONG_FILTER_VALUE_MESSAGE + String.join(", ", filterValues));
 
         return Result.of(userState);
     }
@@ -95,7 +95,7 @@ public class ChooseFilterValueStep extends FilterStep {
     public Result processReset(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
         String filterKey = userState.getDataEntry(FILTER_KEY);
-        telegramSenderService.send(chatId, RESET_FILTERS_TEMPLATE.formatted(filterKey));
+        telegramSenderService.sendMessage(chatId, RESET_FILTERS_TEMPLATE.formatted(filterKey));
 
         return Result.of(userState.removeDataEntry(FILTER_KEY_PREFIX + filterKey));
     }

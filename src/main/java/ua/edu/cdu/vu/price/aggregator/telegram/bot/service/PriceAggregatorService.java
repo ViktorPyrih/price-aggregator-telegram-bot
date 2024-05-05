@@ -10,15 +10,17 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.PriceAggregatorApiClient;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.request.ProductsRequest;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.response.FiltersResponse;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.response.MarketplacesResponse;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.response.ProductsResponse;
-import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Filter;
-import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Pageable;
-import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Product;
-import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.TooManyRequestsException;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.*;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.mapper.FilterMapper;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.mapper.MarketplaceMapper;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.mapper.ProductMapper;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @EnableRetry
@@ -38,10 +40,13 @@ public class PriceAggregatorService {
     private final PriceAggregatorApiClient apiClient;
     private final FilterMapper filterMapper;
     private final ProductMapper productMapper;
+    private final MarketplaceMapper marketplaceMapper;
 
     @Cacheable("marketplaces")
-    public List<String> getMarketplaces() {
-        return apiClient.getMarketplaces().marketplaces();
+    public Map<String, Marketplace> getMarketplaces() {
+        MarketplacesResponse response = apiClient.getMarketplaces();
+        return marketplaceMapper.convertToDomain(response).stream()
+                .collect(Collectors.toMap(Marketplace::getName, Function.identity()));
     }
 
     @Cacheable("categories")
@@ -49,30 +54,25 @@ public class PriceAggregatorService {
         return apiClient.getCategories(marketplace).categories();
     }
 
-    @Cacheable("subcategories1")
-    public List<String> getSubcategories(String marketplace, String category) {
-        return apiClient.getSubcategories(marketplace, category).categories();
-    }
-
-    @Cacheable("subcategories2")
-    public List<String> getSubcategories(String marketplace, String category, String subcategory) {
-        return apiClient.getSubcategories(marketplace, category, subcategory).categories();
+    @Cacheable("subcategories")
+    public List<String> getSubcategories(String marketplace, String category, Map<String, String> subcategories) {
+        return apiClient.getSubcategories(marketplace, category, subcategories).categories();
     }
 
     @Cacheable("filters")
-    public List<Filter> getFilters(String marketplace, String category, String subcategory1, String subcategory2) {
-        FiltersResponse response = apiClient.getFilters(marketplace, category, subcategory1, subcategory2);
+    public List<Filter> getFilters(String marketplace, String category, Map<String, String> subcategories) {
+        FiltersResponse response = apiClient.getFilters(marketplace, category, subcategories);
         return filterMapper.convertToDomain(response.filters());
     }
 
-    public Pageable<Product> getProducts(String marketplace, String category, String subcategory1, String subcategory2, List<Filter> filters, double minPrice, double maxPrice, int page) {
+    public Pageable<Product> getProducts(String marketplace, String category, Map<String, String> subcategories, List<Filter> filters, double minPrice, double maxPrice, int page) {
         ProductsRequest request = ProductsRequest.builder()
                 .minPrice(minPrice)
                 .maxPrice(maxPrice)
                 .filters(filterMapper.convertToRequest(filters))
                 .build();
         try {
-            ProductsResponse response = apiClient.getProducts(marketplace, category, subcategory1, subcategory2, request, page);
+            ProductsResponse response = apiClient.getProducts(marketplace, category, subcategories, request, page);
             return productMapper.convertToDomain(response);
         } catch (WebClientResponseException.TooManyRequests e) {
             throw new TooManyRequestsException(e);

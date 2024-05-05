@@ -36,7 +36,7 @@ public class ChooseMaxPriceStep implements Step {
     @Override
     public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
-        telegramSenderService.send(chatId, CHOOSE_MAX_PRICE_MESSAGE, Buttons.keyboard(BACK));
+        telegramSenderService.sendMessage(chatId, CHOOSE_MAX_PRICE_MESSAGE, Buttons.keyboard(BACK));
 
         return Result.of(userState);
     }
@@ -48,13 +48,13 @@ public class ChooseMaxPriceStep implements Step {
         String maxPrice = update.getMessage().getText();
         Double maxPriceValue = NumberUtils.parseDouble(maxPrice);
         if (maxPriceValue.isNaN()) {
-            telegramSenderService.send(chatId, maxPrice + WRONG_MAX_PRICE_MESSAGE);
+            telegramSenderService.sendMessage(chatId, maxPrice + WRONG_MAX_PRICE_MESSAGE);
             return Result.of(userState);
         }
 
         double minPrice = Double.parseDouble(userState.getDataEntry(MIN_PRICE));
         if (minPrice > maxPriceValue) {
-            telegramSenderService.send(chatId, WRONG_MAX_PRICE_MESSAGE_2);
+            telegramSenderService.sendMessage(chatId, WRONG_MAX_PRICE_MESSAGE_2);
             return Result.of(userState);
         }
 

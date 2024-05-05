@@ -8,7 +8,6 @@ public interface CommonConstants {
     String MARKETPLACE = "marketplace";
     String CATEGORY = "category";
     String SUBCATEGORY = "subcategory";
-    String SUBCATEGORY2 = "subcategory2";
     String FILTER_KEY = "filterKey";
     String MIN_PRICE = "minPrice";
     String MAX_PRICE = "maxPrice";

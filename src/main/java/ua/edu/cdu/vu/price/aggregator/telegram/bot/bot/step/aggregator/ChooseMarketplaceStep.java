@@ -37,8 +37,8 @@ public class ChooseMarketplaceStep implements Step {
     @Override
     public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
-        var marketplaces = priceAggregatorService.getMarketplaces();
-        telegramSenderService.send(chatId, CHOOSE_MARKETPLACE_MESSAGE, Buttons.keyboard(marketplaces));
+        var marketplaces = priceAggregatorService.getMarketplaces().keySet();
+        telegramSenderService.sendMessage(chatId, CHOOSE_MARKETPLACE_MESSAGE, Buttons.keyboard(marketplaces));
 
         return Result.of(userState);
     }
@@ -47,13 +47,13 @@ public class ChooseMarketplaceStep implements Step {
     public Result process(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
 
-        var marketplaces = priceAggregatorService.getMarketplaces();
+        var marketplaces = priceAggregatorService.getMarketplaces().keySet();
         String marketplace = update.getMessage().getText();
         if (marketplaces.contains(marketplace)) {
             return Result.of(userState.nextStep().addDataEntry(MARKETPLACE, marketplace));
         }
 
-        telegramSenderService.send(chatId, WRONG_MARKETPLACE_MESSAGE + String.join(", ", marketplaces));
+        telegramSenderService.sendMessage(chatId, WRONG_MARKETPLACE_MESSAGE + String.join(", ", marketplaces));
 
         return Result.of(userState);
     }

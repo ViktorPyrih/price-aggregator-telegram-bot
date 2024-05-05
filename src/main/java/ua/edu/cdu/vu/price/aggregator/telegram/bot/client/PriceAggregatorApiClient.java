@@ -12,6 +12,8 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.response.FiltersRespon
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.response.MarketplacesResponse;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.client.response.ProductsResponse;
 
+import java.util.Map;
+
 @HttpExchange
 public interface PriceAggregatorApiClient {
 
@@ -21,17 +23,14 @@ public interface PriceAggregatorApiClient {
     @GetExchange("/marketplaces/{marketplace}/categories")
     CategoriesResponse getCategories(@PathVariable String marketplace);
 
-    @GetExchange("/marketplaces/{marketplace}/categories")
-    CategoriesResponse getSubcategories(@PathVariable String marketplace, @RequestParam String category);
-
-    @GetExchange("/marketplaces/{marketplace}/categories")
-    CategoriesResponse getSubcategories(@PathVariable String marketplace, @RequestParam String category, @RequestParam String subcategory);
+    @GetExchange("/marketplaces/{marketplace}/subcategories")
+    CategoriesResponse getSubcategories(@PathVariable String marketplace, @RequestParam String category, @RequestParam Map<String, String> subcategories);
 
     @GetExchange("/marketplaces/{marketplace}/filters")
-    FiltersResponse getFilters(@PathVariable String marketplace, @RequestParam String category, @RequestParam String subcategory1, @RequestParam String subcategory2);
+    FiltersResponse getFilters(@PathVariable String marketplace, @RequestParam String category, @RequestParam Map<String, String> subcategories);
 
     @PostExchange("/marketplaces/{marketplace}/products")
-    ProductsResponse getProducts(@PathVariable String marketplace, @RequestParam String category, @RequestParam String subcategory1, @RequestParam String subcategory2, @RequestBody ProductsRequest productsRequest, @RequestParam int page);
+    ProductsResponse getProducts(@PathVariable String marketplace, @RequestParam String category, @RequestParam Map<String, String> subcategories, @RequestBody ProductsRequest productsRequest, @RequestParam int page);
 
     @GetExchange("/search")
     ProductsResponse search(@RequestParam String query);

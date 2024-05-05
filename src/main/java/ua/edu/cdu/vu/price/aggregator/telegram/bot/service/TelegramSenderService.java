@@ -6,9 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -29,7 +31,7 @@ public class TelegramSenderService {
 
     private final ObjectProvider<PriceAggregatorTelegramBot> botProvider;
 
-    public int send(long chatId, String message, boolean removeReplyKeyboard) throws TelegramApiException {
+    public int sendMessage(long chatId, String message, boolean removeReplyKeyboard) throws TelegramApiException {
         return botProvider.getObject().execute(SendMessage.builder()
                 .chatId(chatId)
                 .text(message)
@@ -40,11 +42,11 @@ public class TelegramSenderService {
                 .build()).getMessageId();
     }
 
-    public int send(long chatId, String message) throws TelegramApiException {
-        return send(chatId, message, false);
+    public int sendMessage(long chatId, String message) throws TelegramApiException {
+        return sendMessage(chatId, message, false);
     }
 
-    public void send(long chatId, String text, ReplyKeyboardMarkup markup) throws TelegramApiException {
+    public void sendMessage(long chatId, String text, ReplyKeyboardMarkup markup) throws TelegramApiException {
         botProvider.getObject().execute(SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
@@ -53,7 +55,7 @@ public class TelegramSenderService {
                 .build());
     }
 
-    public void send(long chatId, String caption, List<String> imageUrls, Map<String, byte[]> imageData) throws TelegramApiException {
+    public void sendAlbum(long chatId, String caption, List<String> imageUrls, Map<String, byte[]> imageData) throws TelegramApiException {
         botProvider.getObject().execute(SendMediaGroup.builder()
                 .chatId(chatId)
                 .medias(Stream.concat(
@@ -61,6 +63,13 @@ public class TelegramSenderService {
                                 imageData.entrySet().stream().map(image -> createInputMedia(caption, image.getKey(), image.getValue())))
                         .toList()
                 ).build());
+    }
+
+    public void sendAnimation(long chatId, String imageUrl) throws TelegramApiException {
+        botProvider.getObject().execute(SendAnimation.builder()
+                .chatId(chatId)
+                .animation(new InputFile(imageUrl))
+                .build());
     }
 
     private InputMedia createInputMedia(String caption, String name, byte[] content) {
@@ -83,7 +92,7 @@ public class TelegramSenderService {
 
     public void sendUnchecked(long chatId, String message, boolean removeReplyKeyboard) {
         try {
-            send(chatId, message, removeReplyKeyboard);
+            sendMessage(chatId, message, removeReplyKeyboard);
         } catch (TelegramApiException e) {
             log.error("Failed to send a message", e);
         }

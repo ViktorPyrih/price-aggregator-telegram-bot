@@ -30,6 +30,8 @@ public class ProductTelegramSenderService {
     private static final String DESCRIPTION_PNG = ".description.png";
     private static final String PRICE_PNG = ".price.png";
 
+    private static final String SPINNER_IMAGE = "https://cdn.dribbble.com/users/29051/screenshots/2347771/spinner.mov.gif";
+
     private final TelegramSenderService telegramSenderService;
     private final ScheduledExecutorService taskScheduler;
 
@@ -41,7 +43,8 @@ public class ProductTelegramSenderService {
     }
 
     public int sendProducts(long chatId, Supplier<Pageable<Product>> proudctsSupplier, boolean pagination) throws TelegramApiException {
-        int messageId = telegramSenderService.send(chatId, SEARCHING_FOR_PRODUCTS_MESSAGE);
+        int messageId = telegramSenderService.sendMessage(chatId, SEARCHING_FOR_PRODUCTS_MESSAGE);
+        telegramSenderService.sendAnimation(chatId, SPINNER_IMAGE);
 
         TelegramEditMessageTask task = new TelegramEditMessageTask(messageId, chatId, searchProductsMessageFrequency, telegramSenderService);
         ScheduledFuture<?> future = taskScheduler.scheduleAtFixedRate(task, searchProductsMessageFrequency, searchProductsMessageFrequency, TimeUnit.SECONDS);
@@ -60,7 +63,7 @@ public class ProductTelegramSenderService {
 
     private void sendProducts(long chatId, Pageable<Product> products, boolean pagination) throws TelegramApiException {
         if (products.content().isEmpty()) {
-            telegramSenderService.send(chatId, NO_PRODUCTS_FOUND_MESSAGE);
+            telegramSenderService.sendMessage(chatId, NO_PRODUCTS_FOUND_MESSAGE);
             return;
         }
         var pages = pagination ? pages(products.pagesCount()) : Collections.<String>emptyList();
@@ -76,7 +79,7 @@ public class ProductTelegramSenderService {
     }
 
     private void sendProduct(long chatId, Product product, List<String> pages) throws TelegramApiException {
-        telegramSenderService.send(chatId, product.getLink(), Buttons.keyboard(pages, true));
+        telegramSenderService.sendMessage(chatId, product.getLink(), Buttons.keyboard(pages, true));
 
         String description = product.getLink() + DESCRIPTION_PNG;
         String price = product.getLink() + PRICE_PNG;
@@ -85,6 +88,6 @@ public class ProductTelegramSenderService {
             put(price, decode(product.getPrice()));
         }};
 
-        telegramSenderService.send(chatId, product.getLink(), List.of(product.getImage()), images);
+        telegramSenderService.sendAlbum(chatId, product.getLink(), List.of(product.getImage()), images);
     }
 }

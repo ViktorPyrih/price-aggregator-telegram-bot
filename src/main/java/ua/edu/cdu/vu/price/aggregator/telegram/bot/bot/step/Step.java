@@ -16,12 +16,11 @@ public interface Step {
     int CHOOSE_MARKETPLACE_STEP_ID = 1;
     int CHOOSE_CATEGORY_STEP_ID = 2;
     int CHOOSE_SUBCATEGORY_STEP_ID = 3;
-    int CHOOSE_SUBCATEGORY2_STEP_ID = 4;
-    int CHOOSE_FILTER_KEY_STEP_ID = 5;
-    int CHOOSE_FILTER_VALUE_STEP_ID = 6;
-    int CHOOSE_MIN_PRICE_STEP_ID = 7;
-    int CHOOSE_MAX_PRICE_STEP_ID = 8;
-    int SHOW_PRODUCTS_STEP_ID = 9;
+    int CHOOSE_FILTER_KEY_STEP_ID = 4;
+    int CHOOSE_FILTER_VALUE_STEP_ID = 5;
+    int CHOOSE_MIN_PRICE_STEP_ID = 6;
+    int CHOOSE_MAX_PRICE_STEP_ID = 7;
+    int SHOW_PRODUCTS_STEP_ID = 8;
 
     @Value(staticConstructor = "of")
     class Result {

@@ -1,7 +1,5 @@
 package ua.edu.cdu.vu.price.aggregator.telegram.bot.domain;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,7 +56,6 @@ public record UserState(long userId, int flowId, int stepId, Map<String, String>
 
         return data.entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith(prefix))
-                .map(entry -> Map.entry(StringUtils.substringAfter(entry.getKey(), prefix), entry.getValue()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

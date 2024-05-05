@@ -26,10 +26,9 @@ public abstract class FilterStep implements Step {
     List<Filter> getFilters(UserState userState) {
         String marketplace = userState.getDataEntry(MARKETPLACE);
         String category = userState.getDataEntry(CATEGORY);
-        String subcategory = userState.getDataEntry(SUBCATEGORY);
-        String subcategory2 = userState.getDataEntry(SUBCATEGORY2);
+        var subcategories = userState.getAllDataEntriesByPrefix(SUBCATEGORY);
 
-        return priceAggregatorService.getFilters(marketplace, category, subcategory, subcategory2);
+        return priceAggregatorService.getFilters(marketplace, category, subcategories);
     }
 
     @Override

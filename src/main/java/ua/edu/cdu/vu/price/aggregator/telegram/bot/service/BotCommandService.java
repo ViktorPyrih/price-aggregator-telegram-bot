@@ -33,7 +33,7 @@ public class BotCommandService {
     private void processResult(Update update, BotCommand.Result result) throws TelegramApiException {
         long chatId = getChatId(update);
         if (!result.isEmpty()) {
-            telegramSenderService.send(chatId, result.getResponse());
+            telegramSenderService.sendMessage(chatId, result.getResponse());
         }
     }
 }

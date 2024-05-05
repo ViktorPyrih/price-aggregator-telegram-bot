@@ -40,7 +40,7 @@ public class ChooseCategoryStep implements Step {
         String marketplace = userState.getDataEntry(MARKETPLACE);
         var categories = priceAggregatorService.getCategories(marketplace);
 
-        telegramSenderService.send(chatId, CHOOSE_CATEGORY_MESSAGE, Buttons.keyboard(categories, true));
+        telegramSenderService.sendMessage(chatId, CHOOSE_CATEGORY_MESSAGE, Buttons.keyboard(categories, true));
 
         return Result.of(userState);
     }
@@ -58,7 +58,7 @@ public class ChooseCategoryStep implements Step {
             return Result.of(userState.nextStep().addDataEntry(CATEGORY, category));
         }
 
-        telegramSenderService.send(chatId, WRONG_CATEGORY_MESSAGE + String.join(", ", categories));
+        telegramSenderService.sendMessage(chatId, WRONG_CATEGORY_MESSAGE + String.join(", ", categories));
 
         return Result.of(userState);
     }
@@ -66,6 +66,9 @@ public class ChooseCategoryStep implements Step {
     @Override
     public Result processBack(Update update, UserState userState) throws TelegramApiException {
         onStart(update, userState);
-        return Result.of(userState.removeDataEntry(CATEGORY));
+        return Result.of(userState
+                .removeDataEntry(CATEGORY)
+                .removeDataEntriesByPrefix(SUBCATEGORY)
+        );
     }
 }

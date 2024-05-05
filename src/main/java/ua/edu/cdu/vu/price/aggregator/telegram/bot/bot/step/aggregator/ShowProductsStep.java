@@ -63,7 +63,7 @@ public class ShowProductsStep implements Step {
         Optional<Integer> page = tryParseToInt(update.getMessage().getText());
 
         if (page.isEmpty() || page.get() <= 0 || page.get() > pagesCount) {
-            telegramSenderService.send(chatId, WRONG_PAGE_NUMBER_TEMPLATE.formatted(pagesCount));
+            telegramSenderService.sendMessage(chatId, WRONG_PAGE_NUMBER_TEMPLATE.formatted(pagesCount));
             return Result.of(userState);
         }
 
@@ -92,13 +92,12 @@ public class ShowProductsStep implements Step {
     private Pageable<Product> getProducts(UserState userState, int page) {
         String marketplace = userState.getDataEntry(MARKETPLACE);
         String category = userState.getDataEntry(CATEGORY);
-        String subcategory = userState.getDataEntry(SUBCATEGORY);
-        String subcategory2 = userState.getDataEntry(SUBCATEGORY2);
+        var subcategories = userState.getAllDataEntriesByPrefix(SUBCATEGORY);
         var filters = extractFilters(userState);
         double minPrice = Double.parseDouble(userState.getDataEntry(MIN_PRICE));
         double maxPrice = Double.parseDouble(userState.getDataEntry(MAX_PRICE));
 
-        return priceAggregatorService.getProducts(marketplace, category, subcategory, subcategory2, filters, minPrice, maxPrice, page);
+        return priceAggregatorService.getProducts(marketplace, category, subcategories, filters, minPrice, maxPrice, page);
     }
 
     private List<Filter> extractFilters(UserState userState) {

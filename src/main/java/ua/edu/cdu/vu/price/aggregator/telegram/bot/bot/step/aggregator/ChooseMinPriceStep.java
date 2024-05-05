@@ -35,7 +35,7 @@ public class ChooseMinPriceStep implements Step {
     @Override
     public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
-        telegramSenderService.send(chatId, CHOOSE_MIN_PRICE_MESSAGE, Buttons.keyboard(BACK));
+        telegramSenderService.sendMessage(chatId, CHOOSE_MIN_PRICE_MESSAGE, Buttons.keyboard(BACK));
 
         return Result.of(userState);
     }
@@ -49,7 +49,7 @@ public class ChooseMinPriceStep implements Step {
             return Result.of(userState.nextStep().addDataEntry(MIN_PRICE, minPrice));
         }
 
-        telegramSenderService.send(chatId, minPrice + WRONG_MIN_PRICE_MESSAGE);
+        telegramSenderService.sendMessage(chatId, minPrice + WRONG_MIN_PRICE_MESSAGE);
 
         return Result.of(userState);
     }

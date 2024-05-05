@@ -38,7 +38,7 @@ public class StepProcessor {
     public void process(Update update, UserState userState, boolean isInitial) throws TelegramApiException {
         if (isInitial) {
             Step step = getStep(userState);
-            onStart(update, userState, step);
+            onStart(update, userState, step, true);
         } else if (BACK.equals(update.getMessage().getText())) {
             UserState previousStepUserState = userState.previousStep();
             processStep(update, previousStepUserState);
@@ -64,20 +64,32 @@ public class StepProcessor {
             userStateService.save(newUserState);
 
             String text = update.getMessage().getText();
-            if (!COMMANDS.contains(text) && newUserState.stepId() != userState.stepId()) {
-                var nextStep = findStep(newUserState);
-                if (nextStep.isPresent()) {
-                    onStart(update, newUserState, nextStep.get());
-                }
+            if (!COMMANDS.contains(text)) {
+                onStartNextStep(update, newUserState);
             }
         } else {
             userStateService.delete(userState);
         }
     }
 
-    private void onStart(Update update, UserState userState, Step step) throws TelegramApiException {
-        UserState newUserState = step.onStart(update, userState).getUserState();
-        userStateService.save(newUserState);
+    private void onStart(Update update, UserState userState, Step step, boolean isInitial) throws TelegramApiException {
+        Step.Result result = step.onStart(update, userState);
+        UserState newUserState = result.getUserState();
+
+        if (isInitial || userState != newUserState) {
+            userStateService.save(newUserState);
+        }
+
+        if (userState.stepId() != newUserState.stepId()) {
+            onStartNextStep(update, newUserState);
+        }
+    }
+
+    private void onStartNextStep(Update update, UserState userState) throws TelegramApiException {
+        var nextStep = findStep(userState);
+        if (nextStep.isPresent()) {
+            onStart(update, userState, nextStep.get(), false);
+        }
     }
 
     private Step getStep(UserState userState) {
