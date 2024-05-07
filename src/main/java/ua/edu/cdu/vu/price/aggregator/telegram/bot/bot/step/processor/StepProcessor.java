@@ -36,9 +36,9 @@ public class StepProcessor {
     }
 
     public void process(Update update, UserState userState, boolean isInitial) throws TelegramApiException {
-        if (isInitial) {
-            Step step = getStep(userState);
-            onStart(update, userState, step, true);
+        if (isInitial || EXIT.equals(update.getMessage().getText())) {
+            Step step = getStep(userState.initialStep());
+            onStart(update, userState.initialStep(), step, true);
         } else if (BACK.equals(update.getMessage().getText())) {
             UserState previousStepUserState = userState.previousStep();
             processStep(update, previousStepUserState);
@@ -64,7 +64,7 @@ public class StepProcessor {
             userStateService.save(newUserState);
 
             String text = update.getMessage().getText();
-            if (!COMMANDS.contains(text)) {
+            if (!step.isFinal() && !COMMANDS.contains(text)) {
                 onStartNextStep(update, newUserState);
             }
         } else {

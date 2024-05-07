@@ -11,5 +11,6 @@ public class Product {
     String image;
     String price;
     String description;
+    String title;
 
 }

@@ -45,6 +45,10 @@ public interface Step {
 
     int stepId();
 
+    default boolean isFinal() {
+        return false;
+    }
+
     default Result processUpdate(Update update, UserState userState) throws TelegramApiException {
         String text = update.getMessage().getText();
         if (BACK.equals(text)) {

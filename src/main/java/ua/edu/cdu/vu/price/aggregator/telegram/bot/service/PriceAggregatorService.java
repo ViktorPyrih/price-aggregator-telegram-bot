@@ -83,4 +83,9 @@ public class PriceAggregatorService {
         ProductsResponse response = apiClient.search(query);
         return productMapper.convertToDomain(response);
     }
+
+    public Pageable<Product> search(String marketplace, String query) {
+        ProductsResponse response = apiClient.search(marketplace, query);
+        return productMapper.convertToDomain(response);
+    }
 }

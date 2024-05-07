@@ -34,6 +34,8 @@ dependencies {
     implementation 'org.springframework.retry:spring-retry'
 
     implementation 'org.telegram:telegrambots:6.9.7.1'
+    implementation 'org.apache.commons:commons-lang3:3.14.0'
+    implementation 'commons-codec:commons-codec:1.17.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

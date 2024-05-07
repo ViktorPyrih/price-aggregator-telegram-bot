@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -50,6 +51,11 @@ public class ShowProductsStep implements Step {
     }
 
     @Override
+    public boolean isFinal() {
+        return true;
+    }
+
+    @Override
     public Result onStart(Update update, UserState userState) throws TelegramApiException {
         return process(update, userState, FIRST_PAGE);
     }
@@ -77,8 +83,9 @@ public class ShowProductsStep implements Step {
 
     private Result process(Update update, UserState userState, int page) throws TelegramApiException {
         long chatId = getChatId(update);
+        String marketplace = userState.getDataEntry(MARKETPLACE);
 
-        int pagesCount = productTelegramSenderService.sendProducts(chatId, () -> getProducts(userState, page), true);
+        int pagesCount = productTelegramSenderService.sendProducts(chatId, marketplace, () -> getProducts(userState, page), true);
 
         return Result.of(userState.addDataEntry(PAGES_COUNT, pagesCount));
     }
@@ -102,7 +109,11 @@ public class ShowProductsStep implements Step {
 
     private List<Filter> extractFilters(UserState userState) {
         return filterMapper.convertToDomain(userState.getAllDataEntriesByPrefix(FILTER_KEY_PREFIX).entrySet().stream()
-                .map(entry -> Map.entry(entry.getKey(), parseFilters(entry.getValue())))
+                .map(entry -> Map.entry(extractFilterKey(entry.getKey()), parseFilters(entry.getValue())))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+    }
+
+    private String extractFilterKey(String key) {
+        return StringUtils.substringAfter(key, FILTER_KEY_PREFIX);
     }
 }

@@ -11,4 +11,8 @@ public class BotCommandParser {
     public String parseCommand(String command) {
         return StringUtils.substringBefore(command, SPACE);
     }
+
+    public String[] parseArguments(String data) {
+        return StringUtils.substringAfter(data, SPACE).split(SPACE);
+    }
 }

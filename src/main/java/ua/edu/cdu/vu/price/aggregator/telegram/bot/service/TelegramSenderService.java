@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -52,6 +53,15 @@ public class TelegramSenderService {
                 .text(text)
                 .parseMode(ParseMode.HTML)
                 .replyMarkup(markup)
+                .build());
+    }
+
+    public void sendMessage(long chatId, String text, InlineKeyboardMarkup keyboard) throws TelegramApiException {
+        botProvider.getObject().execute(SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .replyMarkup(keyboard)
+                .parseMode(ParseMode.HTML)
                 .build());
     }
 

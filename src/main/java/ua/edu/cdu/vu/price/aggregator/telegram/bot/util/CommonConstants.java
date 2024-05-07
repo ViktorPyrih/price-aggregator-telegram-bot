@@ -15,6 +15,8 @@ public interface CommonConstants {
     String BACK = "\uD83D\uDD19";
     String COMPLETE = "✔";
     String RESET = "↩";
+    String EXIT = "❌";
     String FILTER_KEY_PREFIX = "filter.key.";
+    String QUERY = "query";
 
 }

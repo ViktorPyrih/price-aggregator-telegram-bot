@@ -9,15 +9,19 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.messaging.consumer.MessageCon
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.messaging.producer.MessageProducer;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.UserTaskService;
 
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.BACK;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.EXIT;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getUserId;
 
 @Slf4j
 @Component
 public class PriceAggregatorTelegramBot extends TelegramLongPollingBot {
+
+    private static final Set<String> CANCEL_COMMANDS = Set.of(BACK, EXIT);
 
     private final PriceAggregatorTelegramBotConfiguration configuration;
     private final MessageProducer<Long, Update> updateMessageProducer;
@@ -60,6 +64,6 @@ public class PriceAggregatorTelegramBot extends TelegramLongPollingBot {
     }
 
     private boolean shouldCancelTask(Future<?> task, Update update) {
-        return !task.isDone() && update.hasMessage() && BACK.equals(update.getMessage().getText());
+        return !task.isDone() && update.hasMessage() && CANCEL_COMMANDS.contains(update.getMessage().getText());
     }
 }

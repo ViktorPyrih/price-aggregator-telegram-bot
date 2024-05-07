@@ -4,6 +4,6 @@ import java.util.List;
 
 public record ProductsResponse(List<Product> products, int pagesCount) {
 
-    public record Product(String link, String image, String price, String description) {
+    public record Product(String link, String image, String price, String description, String title) {
     }
 }

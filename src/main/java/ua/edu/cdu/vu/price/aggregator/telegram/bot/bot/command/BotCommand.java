@@ -11,6 +11,8 @@ public interface BotCommand {
     String START = "/start";
     String HELP = "/help";
 
+    String SEARCH = "/search";
+
     @Value
     @Builder
     class Result {

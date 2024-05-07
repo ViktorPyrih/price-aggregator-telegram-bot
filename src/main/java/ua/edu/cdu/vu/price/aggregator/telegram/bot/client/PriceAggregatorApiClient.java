@@ -34,4 +34,7 @@ public interface PriceAggregatorApiClient {
 
     @GetExchange("/search")
     ProductsResponse search(@RequestParam String query);
+
+    @GetExchange("/{marketplace}/search")
+    ProductsResponse search(@PathVariable String marketplace, @RequestParam String query);
 }

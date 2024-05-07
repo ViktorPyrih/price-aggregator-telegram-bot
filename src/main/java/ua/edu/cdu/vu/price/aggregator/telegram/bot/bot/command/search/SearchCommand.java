@@ -7,9 +7,11 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.BotCommand;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.Command;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.FlowService;
 
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.BotCommand.SEARCH;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.QUERY;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.SEARCH_FLOW_ID;
 
-@Command("/search")
+@Command(SEARCH)
 @RequiredArgsConstructor
 public class SearchCommand implements BotCommand {
 
@@ -17,7 +19,13 @@ public class SearchCommand implements BotCommand {
 
     @Override
     public Result execute(Update update) throws TelegramApiException {
-        flowService.start(SEARCH_FLOW_ID, update);
+        if (update.hasCallbackQuery()) {
+            var data = update.getCallbackQuery().getData();
+            flowService.start(SEARCH_FLOW_ID, update, state -> state.addDataEntry(QUERY, data));
+        } else {
+            flowService.start(SEARCH_FLOW_ID, update);
+        }
+
         return Result.empty();
     }
 }
