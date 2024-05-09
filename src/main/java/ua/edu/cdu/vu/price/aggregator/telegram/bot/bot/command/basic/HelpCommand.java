@@ -12,6 +12,7 @@ public class HelpCommand implements BotCommand {
     private static final String HELP = """
             <b>Help:</b>
                 - /start - To get started with the bot
+                - /search - To search for a particular item
             """;
 
     @Override
