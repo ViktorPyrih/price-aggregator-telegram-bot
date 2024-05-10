@@ -88,6 +88,6 @@ public record UserState(long userId, int flowId, int stepId, Map<String, String>
     }
 
     public UserState initialStep() {
-        return withStepId(INITIAL_ID);
+        return initial(userId, flowId);
     }
 }

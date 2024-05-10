@@ -22,6 +22,11 @@ public class RedisUserStateService implements UserStateService {
                 .map(userStateMapper::convertToDomain);
     }
 
+    @Override
+    public boolean exists(long userId) {
+        return userStateRepository.existsById(userId);
+    }
+
     public void save(UserState userState) {
         UserStateHash userStateHash = userStateMapper.convertToHash(userState);
         userStateRepository.save(userStateHash);
