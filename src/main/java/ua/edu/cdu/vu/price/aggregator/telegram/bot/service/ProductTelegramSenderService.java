@@ -36,6 +36,7 @@ public class ProductTelegramSenderService {
     private static final String SEARCHING_FOR_PRODUCTS_MESSAGE_WITH_QUERY = "Searching for products on marketplace: '%s'\nQuery: '%s'";
     private static final String ELAPSED_TIME_MESSAGE = "\nElapsed time: %d seconds";
     private static final String NO_PRODUCTS_FOUND_MESSAGE = "No products found";
+    private static final String TITLE_AND_PRICE_MESSAGE = "%s - %s";
 
     private static final String DESCRIPTION_PNG = ".description.png";
     private static final String PRICE_PNG = ".price.png";
@@ -47,6 +48,7 @@ public class ProductTelegramSenderService {
     private final TelegramSenderService telegramSenderService;
     private final ScheduledExecutorService taskScheduler;
     private final PriceAggregatorService priceAggregatorService;
+    private final TableGeneratorService<String> tableGeneratorService;
 
     @Value("${price-aggregator-telegram-bot.scheduling.search-products-message.frequency:5}")
     private int searchProductsMessageFrequency;
@@ -81,6 +83,9 @@ public class ProductTelegramSenderService {
 
         sendProducts(chatId, products, pagination);
 
+        String summarizedTable = tableGeneratorService.generateProductPriceTable(products.content());
+        telegramSenderService.sendMessage(chatId, summarizedTable);
+
         return products.pagesCount();
     }
 
@@ -104,14 +109,15 @@ public class ProductTelegramSenderService {
 
     private void sendProduct(long chatId, Product product, List<String> pages, Collection<String> marketplaces) throws TelegramApiException {
         String query = Base64Utils.encode(extractSearchQuery(product.getTitle()));
-        telegramSenderService.sendMessage(chatId, product.getTitle(), inlineKeyboard(buttons(marketplaces, query)));
+        String productAndPrice = TITLE_AND_PRICE_MESSAGE.formatted(product.getTitle(), product.getPrice());
+        telegramSenderService.sendMessage(chatId, productAndPrice, inlineKeyboard(buttons(marketplaces, query)));
         telegramSenderService.sendMessage(chatId, product.getLink(), keyboard(pages, true));
 
         String description = Base64Utils.encode(product.getLink()) + DESCRIPTION_PNG;
         String price = Base64Utils.encode(product.getLink()) + PRICE_PNG;
         var images = new LinkedHashMap<String, byte[]>();
-        images.put(description, decode(product.getDescription()));
-        images.put(price, decode(product.getPrice()));
+        images.put(description, decode(product.getDescriptionImage()));
+        images.put(price, decode(product.getPriceImage()));
 
         telegramSenderService.sendAlbum(chatId, product.getLink(), List.of(product.getImage()), images);
     }

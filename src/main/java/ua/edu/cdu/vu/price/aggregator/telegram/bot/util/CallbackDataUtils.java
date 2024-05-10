@@ -16,7 +16,9 @@ public class CallbackDataUtils {
     public static String extractSearchQuery(@NonNull String title) {
         String query = StringUtils.substringBefore(title, "(")
                 .replaceAll(SEARCH_QUERY_PATTERN, EMPTY)
+                .replaceAll("\\s{2,}", SPACE)
                 .trim();
+
         var parts = query.split(SPACE);
         StringBuilder builder = new StringBuilder();
         for (String part: parts) {
