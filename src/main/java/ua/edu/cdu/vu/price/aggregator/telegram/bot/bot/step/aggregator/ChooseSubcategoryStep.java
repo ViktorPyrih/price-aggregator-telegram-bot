@@ -51,6 +51,10 @@ public class ChooseSubcategoryStep implements Step {
 
         String category = userState.getDataEntry(CATEGORY);
         var nextSubcategories = priceAggregatorService.getSubcategories(marketplaceEntry, category, subcategories);
+        if (nextSubcategories.isEmpty()) {
+            return Result.of(userState.nextStep());
+        }
+
         telegramSenderService.sendMessage(chatId, CHOOSE_SUBCATEGORY_MESSAGE, Buttons.keyboard(nextSubcategories, true));
 
         return Result.of(userState);

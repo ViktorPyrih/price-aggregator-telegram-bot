@@ -5,13 +5,18 @@ import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Product;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.StringUtils.SPACE;
 
 @Service
 public class TextTableGeneratorService implements TableGeneratorService<List<String>> {
 
     private static final String[] PRODUCT_PRICE_HEADER = new String[]{"Marketplace", "Product", "Price"};
 
+    private static final int MAX_TITLE_PARTS = 5;
     private static final int MAX_TABLE_ROWS = 10;
 
     private static final String PRE_TAG = "<pre>";
@@ -30,7 +35,13 @@ public class TextTableGeneratorService implements TableGeneratorService<List<Str
 
     private Object[][] convertToMatrix(List<Product> products) {
         return products.stream()
-                .map(product -> new Object[] {product.getMarketplace(), product.getTitle(), product.getPrice()})
+                .map(product -> new Object[] {product.getMarketplace(), trim(product.getTitle()), product.getPrice()})
                 .toArray(Object[][]::new);
+    }
+
+    private String trim(String title) {
+        return Arrays.stream(title.split(SPACE))
+                .limit(MAX_TITLE_PARTS)
+                .collect(Collectors.joining(SPACE));
     }
 }
