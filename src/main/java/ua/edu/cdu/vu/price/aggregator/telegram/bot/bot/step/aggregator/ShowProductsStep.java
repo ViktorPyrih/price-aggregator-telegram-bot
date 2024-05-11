@@ -85,7 +85,7 @@ public class ShowProductsStep implements Step {
         long chatId = getChatId(update);
         String marketplace = userState.getDataEntry(MARKETPLACE);
 
-        int pagesCount = productTelegramSenderService.sendProducts(chatId, marketplace, () -> getProducts(userState, page), true);
+        int pagesCount = productTelegramSenderService.sendProducts(chatId, marketplace, page, () -> getProducts(userState, page), true);
 
         return Result.of(userState.addDataEntry(PAGES_COUNT, pagesCount));
     }

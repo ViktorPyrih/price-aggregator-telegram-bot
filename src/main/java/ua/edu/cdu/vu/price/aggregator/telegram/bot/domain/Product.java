@@ -7,6 +7,7 @@ import lombok.Value;
 @Builder
 public class Product {
 
+    String marketplace;
     String link;
     String image;
     String priceImage;

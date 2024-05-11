@@ -18,7 +18,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 import static java.util.Objects.isNull;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.command.BotCommand.SEARCH;
@@ -48,24 +47,25 @@ public class ProductTelegramSenderService {
     private final TelegramSenderService telegramSenderService;
     private final ScheduledExecutorService taskScheduler;
     private final PriceAggregatorService priceAggregatorService;
-    private final TableGeneratorService<String> tableGeneratorService;
+    private final TableGeneratorService<List<String>> tableGeneratorService;
+    private final PaginationService paginationService;
 
     @Value("${price-aggregator-telegram-bot.scheduling.search-products-message.frequency:5}")
     private int searchProductsMessageFrequency;
 
     public void sendProducts(long chatId, String query, Supplier<Pageable<Product>> proudctsSupplier) throws TelegramApiException {
-        sendProducts(chatId, ALL, query, proudctsSupplier, false);
+        sendProducts(chatId, ALL, query, 0, proudctsSupplier, false);
     }
 
-    public int sendProducts(long chatId, String marketplace, Supplier<Pageable<Product>> proudctsSupplier, boolean pagination) throws TelegramApiException {
-        return sendProducts(chatId, marketplace, null, proudctsSupplier, pagination);
+    public int sendProducts(long chatId, String marketplace, int page, Supplier<Pageable<Product>> proudctsSupplier, boolean pagination) throws TelegramApiException {
+        return sendProducts(chatId, marketplace, null, page, proudctsSupplier, pagination);
     }
 
     public void sendProducts(long chatId, String marketplace, String query, Supplier<Pageable<Product>> proudctsSupplier) throws TelegramApiException {
-        sendProducts(chatId, marketplace, query, proudctsSupplier, false);
+        sendProducts(chatId, marketplace, query, 0, proudctsSupplier, false);
     }
 
-    public int sendProducts(long chatId, String marketplace, String query, Supplier<Pageable<Product>> proudctsSupplier, boolean pagination) throws TelegramApiException {
+    public int sendProducts(long chatId, String marketplace, String query, int page, Supplier<Pageable<Product>> proudctsSupplier, boolean pagination) throws TelegramApiException {
         String message = isNull(query) ? SEARCHING_FOR_PRODUCTS_MESSAGE.formatted(marketplace) : SEARCHING_FOR_PRODUCTS_MESSAGE_WITH_QUERY.formatted(marketplace, query);
         int messageId = telegramSenderService.sendMessage(chatId, message);
         telegramSenderService.sendAnimation(chatId, SPINNER_IMAGE);
@@ -81,30 +81,24 @@ public class ProductTelegramSenderService {
             future.cancel(true);
         }
 
-        sendProducts(chatId, products, pagination);
+        sendProducts(chatId, products, page, pagination);
 
-        String summarizedTable = tableGeneratorService.generateProductPriceTable(products.content());
-        telegramSenderService.sendMessage(chatId, summarizedTable);
+        List<String> summarizedTables = tableGeneratorService.generateProductPriceTable(products.content());
+        summarizedTables.forEach(table -> telegramSenderService.sendMessageUnchecked(chatId, table));
 
         return products.pagesCount();
     }
 
-    private void sendProducts(long chatId, Pageable<Product> products, boolean pagination) throws TelegramApiException {
+    private void sendProducts(long chatId, Pageable<Product> products, int page, boolean pagination) throws TelegramApiException {
         if (products.content().isEmpty()) {
             telegramSenderService.sendMessage(chatId, NO_PRODUCTS_FOUND_MESSAGE, keyboard(BACK));
             return;
         }
-        var pages = pagination ? pages(products.pagesCount()) : Collections.<String>emptyList();
+        var pages = pagination ? paginationService.pages(page, products.pagesCount()) : Collections.<String>emptyList();
         var marketplaces = priceAggregatorService.getMarketplaces().keySet();
         for (var product : products.content()) {
             sendProduct(chatId, product, pages, marketplaces);
         }
-    }
-
-    private static List<String> pages(int count) {
-        return IntStream.rangeClosed(1, count)
-                .mapToObj(String::valueOf)
-                .toList();
     }
 
     private void sendProduct(long chatId, Product product, List<String> pages, Collection<String> marketplaces) throws TelegramApiException {

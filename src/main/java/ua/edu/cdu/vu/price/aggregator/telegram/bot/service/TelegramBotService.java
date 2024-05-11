@@ -43,10 +43,10 @@ public class TelegramBotService implements Consumer<List<Update>> {
             log.error("Request to Telegram API failed", e);
         } catch (TooManyRequestsException e) {
             log.error("API abuse detected: too many requests", e);
-            telegramSenderService.sendUnchecked(chatId, e.getMessage());
+            telegramSenderService.sendMessageUnchecked(chatId, e.getMessage());
         }catch (RuntimeException e) {
             log.error("Internal error occurred", e);
-            telegramSenderService.sendUnchecked(chatId, "Something went wrong on the server side. The error was logged and will be fixed soon");
+            telegramSenderService.sendMessageUnchecked(chatId, "Something went wrong on the server side. The error was logged and will be fixed soon");
         }
     }
 

@@ -96,11 +96,11 @@ public class TelegramSenderService {
         return photo;
     }
 
-    public void sendUnchecked(long chatId, String message) {
-        sendUnchecked(chatId, message, false);
+    public void sendMessageUnchecked(long chatId, String message) {
+        sendMessageUnchecked(chatId, message, false);
     }
 
-    public void sendUnchecked(long chatId, String message, boolean removeReplyKeyboard) {
+    public void sendMessageUnchecked(long chatId, String message, boolean removeReplyKeyboard) {
         try {
             sendMessage(chatId, message, removeReplyKeyboard);
         } catch (TelegramApiException e) {
