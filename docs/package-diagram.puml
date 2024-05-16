@@ -1,0 +1,90 @@
+@startuml
+
+package "telegram.bot" {
+  package "bot" {
+    package "command" {
+        package "parser" {
+
+        }
+        package "resolver" {
+
+        }
+    }
+    package "step" {
+        package "processor" {
+
+        }
+    }
+  }
+  package "client" {
+
+  }
+  package "configuration" {
+
+  }
+  package "domain" {
+
+  }
+  package "listener" {
+
+  }
+  package "mapper" {
+
+  }
+  package "messaging" {
+      package "consumer" {
+
+      }
+      package "producer" {
+
+      }
+  }
+  package "redis" {
+    package "repository" {
+
+    }
+    class RedisUserStateService {
+
+    }
+  }
+  package "repository" {
+
+  }
+  package "service" {
+
+  }
+  package "util" {
+
+  }
+  class PriceAggregatorTelegramBotApplication {
+
+  }
+}
+
+"telegram.bot.bot" ....> "telegram.bot.service" : access
+"telegram.bot.bot" ....> "telegram.bot.configuration" : use
+"telegram.bot.bot" ....> "telegram.bot.messaging.consumer": access
+"telegram.bot.bot" ....> "telegram.bot.messaging.producer": access
+"telegram.bot.messaging.consumer" ....> "telegram.bot.messaging": use
+"telegram.bot.messaging.producer" ....> "telegram.bot.messaging": use
+RedisUserStateService ....> "telegram.bot.redis.repository" : access
+"telegram.bot.service" ....> "telegram.bot.client" : use
+"telegram.bot.service" ....> "telegram.bot.domain" : access
+"telegram.bot.service" ....> "telegram.bot.mapper" : use
+"telegram.bot.service" ....> "telegram.bot.repository" : access
+"telegram.bot.service" ....> "telegram.bot.redis" : use
+"telegram.bot.service" ....> "telegram.bot.bot.command.parser" : access
+"telegram.bot.service" ....> "telegram.bot.bot.command.resolver" : use
+"telegram.bot.bot.command" ....> "telegram.bot.bot.command.parser" : access
+"telegram.bot.service" ....> "telegram.bot.bot.step.processor" : use
+"telegram.bot.bot.step.processor" ....> "telegram.bot.bot.step" : access
+"telegram.bot.bot.command.resolver" ....> "telegram.bot.bot.command" : use
+"telegram.bot.bot.command" ....> "telegram.bot.util" : access
+"telegram.bot.service" ....> "telegram.bot.util" : access
+PriceAggregatorTelegramBotApplication ....> "telegram.bot.configuration" : use
+PriceAggregatorTelegramBotApplication ....> "telegram.bot.listener" : use
+"telegram.bot.bot.step.processor" ....> "telegram.bot.util" : use
+"telegram.bot.bot.step" ....> "telegram.bot.util" : access
+"telegram.bot.bot" ....> "telegram.bot.util" : access
+
+@enduml

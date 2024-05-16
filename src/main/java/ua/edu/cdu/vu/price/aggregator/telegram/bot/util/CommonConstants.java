@@ -12,11 +12,10 @@ public interface CommonConstants {
     String MIN_PRICE = "minPrice";
     String MAX_PRICE = "maxPrice";
     String PAGES_COUNT = "pagesCount";
-    String BACK = "\uD83D\uDD19";
-    String COMPLETE = "✔";
-    String RESET = "↩";
-    String EXIT = "❌";
+    String BACK = "BACK \uD83D\uDD19";
+    String COMPLETE = "COMPLETE ✔";
+    String RESET = "RESET ↩";
+    String EXIT = "EXIT ❌";
     String FILTER_KEY_PREFIX = "filter.key.";
-    String QUERY = "query";
 
 }
