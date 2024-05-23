@@ -82,6 +82,14 @@ public class TelegramSenderService {
                 .build());
     }
 
+    public void sendAnimationUnchecked(long chatId, String imageUrl) {
+        try {
+            sendAnimation(chatId, imageUrl);
+        } catch (TelegramApiException e) {
+            log.error("Failed to send an animation", e);
+        }
+    }
+
     private InputMedia createInputMedia(String caption, String name, byte[] content) {
         InputMediaPhoto photo = new InputMediaPhoto();
         photo.setMedia(new ByteArrayInputStream(content), name);
@@ -108,7 +116,7 @@ public class TelegramSenderService {
         }
     }
 
-    public void edit(long chatId, int messageId, String message) throws TelegramApiException {
+    public void editMessage(long chatId, int messageId, String message) throws TelegramApiException {
         botProvider.getObject().execute(EditMessageText.builder()
                 .chatId(chatId)
                 .messageId(messageId)
@@ -117,9 +125,9 @@ public class TelegramSenderService {
                 .build());
     }
 
-    public void editUnchecked(long chatId, int messageId, String message) {
+    public void editMessageUnchecked(long chatId, int messageId, String message) {
         try {
-            edit(chatId, messageId, message);
+            editMessage(chatId, messageId, message);
         } catch (TelegramApiException e) {
             log.error("Failed to edit a message", e);
         }

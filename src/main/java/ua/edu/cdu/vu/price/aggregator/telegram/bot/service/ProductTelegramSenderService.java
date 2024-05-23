@@ -25,6 +25,7 @@ import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Base64Utils.decod
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Buttons.*;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CallbackDataUtils.extractSearchQuery;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.BACK;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.SPINNER_IMAGE;
 
 @Service
 @RequiredArgsConstructor
@@ -40,8 +41,6 @@ public class ProductTelegramSenderService {
     private static final String DESCRIPTION_PNG = ".description.png";
     private static final String PRICE_PNG = ".price.png";
 
-    private static final String SPINNER_IMAGE = "https://cdn.dribbble.com/users/29051/screenshots/2347771/spinner.mov.gif";
-
     private static final String SEARCH_CALLBACK_DATA = SEARCH + " %s %s";
 
     private final TelegramSenderService telegramSenderService;
@@ -50,8 +49,8 @@ public class ProductTelegramSenderService {
     private final TableGeneratorService<List<String>> tableGeneratorService;
     private final PaginationService paginationService;
 
-    @Value("${price-aggregator-telegram-bot.scheduling.search-products-message.frequency:5}")
-    private int searchProductsMessageFrequency;
+    @Value("${price-aggregator-telegram-bot.scheduling.tasks.edit-search-products-message.rate-seconds:5}")
+    private int editTaskRateSeconds;
 
     public void sendProducts(long chatId, String query, Supplier<Pageable<Product>> proudctsSupplier) throws TelegramApiException {
         sendProducts(chatId, ALL, query, 0, proudctsSupplier, false);
@@ -71,8 +70,8 @@ public class ProductTelegramSenderService {
         telegramSenderService.sendAnimation(chatId, SPINNER_IMAGE);
 
         Function<Integer, String> messageTemplate = (elapsedTime) -> message + ELAPSED_TIME_MESSAGE.formatted(elapsedTime);
-        TelegramEditMessageTask task = new TelegramEditMessageTask(messageId, chatId, searchProductsMessageFrequency, messageTemplate, telegramSenderService);
-        var future = taskScheduler.scheduleAtFixedRate(task, searchProductsMessageFrequency, searchProductsMessageFrequency, TimeUnit.SECONDS);
+        TelegramEditMessageTask task = new TelegramEditMessageTask(messageId, chatId, editTaskRateSeconds, messageTemplate, telegramSenderService);
+        var future = taskScheduler.scheduleAtFixedRate(task, editTaskRateSeconds, editTaskRateSeconds, TimeUnit.SECONDS);
 
         Pageable<Product> products;
         try {

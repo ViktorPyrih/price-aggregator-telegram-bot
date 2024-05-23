@@ -26,7 +26,7 @@ public class TelegramEditMessageTask implements Runnable {
 
     @Override
     public void run() {
-        telegramSenderService.editUnchecked(chatId, messageId, messageTemplate.apply(elapsedSeconds));
+        telegramSenderService.editMessageUnchecked(chatId, messageId, messageTemplate.apply(elapsedSeconds));
         elapsedSeconds += frequency;
     }
 }

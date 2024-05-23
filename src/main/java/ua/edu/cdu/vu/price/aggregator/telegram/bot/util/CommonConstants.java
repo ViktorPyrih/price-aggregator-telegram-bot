@@ -17,5 +17,6 @@ public interface CommonConstants {
     String RESET = "RESET ↩";
     String EXIT = "EXIT ❌";
     String FILTER_KEY_PREFIX = "filter.key.";
+    String SPINNER_IMAGE = "https://cdn.dribbble.com/users/29051/screenshots/2347771/spinner.mov.gif";
 
 }

@@ -1,5 +1,6 @@
 package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.aggregator;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -7,9 +8,12 @@ import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.Filter;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.PriceAggregatorService;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.TelegramSenderService;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.task.TelegramSpinnerTask;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Buttons;
 
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.FILTER_KEY;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.FILTER_KEY_PREFIX;
@@ -22,8 +26,14 @@ public class ChooseFilterKeyStep extends FilterStep {
     private static final String WRONG_FILTER_MESSAGE = "Please, choose one of the following filters: ";
     private static final String RESET_FILTERS_MESSAGE = "Resetting filters...";
 
-    public ChooseFilterKeyStep(PriceAggregatorService priceAggregatorService, TelegramSenderService telegramSenderService) {
+    private final ScheduledExecutorService taskScheduler;
+
+    @Value("${price-aggregator-telegram-bot.scheduling.tasks.spinner.delay-seconds:5}")
+    private int spinnerTaskDelaySeconds;
+
+    public ChooseFilterKeyStep(PriceAggregatorService priceAggregatorService, TelegramSenderService telegramSenderService, ScheduledExecutorService taskScheduler) {
         super(priceAggregatorService, telegramSenderService);
+        this.taskScheduler = taskScheduler;
     }
 
     @Override
@@ -35,7 +45,16 @@ public class ChooseFilterKeyStep extends FilterStep {
     public Result onStart(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
 
-        var filters = getFilters(userState);
+        TelegramSpinnerTask task = new TelegramSpinnerTask(chatId, telegramSenderService);
+        var future = taskScheduler.schedule(task, spinnerTaskDelaySeconds, TimeUnit.SECONDS);
+
+        List<Filter> filters;
+        try {
+            filters = getFilters(userState);
+        } finally {
+            future.cancel(true);
+        }
+
         telegramSenderService.sendMessage(chatId, CHOOSE_FILTER_MESSAGE, Buttons.keyboard(extractKeys(filters), true, true, true));
 
         return Result.of(userState);
