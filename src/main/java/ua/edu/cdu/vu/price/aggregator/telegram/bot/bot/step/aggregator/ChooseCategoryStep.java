@@ -65,10 +65,12 @@ public class ChooseCategoryStep implements Step {
 
     @Override
     public Result processBack(Update update, UserState userState) throws TelegramApiException {
-        onStart(update, userState);
-        return Result.of(userState
-                .removeDataEntry(CATEGORY)
-                .removeDataEntriesByPrefix(SUBCATEGORY)
-        );
+        var subcategories = userState.getAllDataEntriesByPrefix(SUBCATEGORY);
+        if (subcategories.isEmpty()) {
+            onStart(update, userState);
+            return Result.of(userState.removeDataEntry(CATEGORY));
+        }
+
+        return Result.of(CHOOSE_SUBCATEGORY_STEP_ID, userState);
     }
 }

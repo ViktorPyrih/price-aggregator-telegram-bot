@@ -82,11 +82,27 @@ public class ChooseSubcategoryStep implements Step {
 
     @Override
     public Result processBack(Update update, UserState userState) throws TelegramApiException {
-        onStart(update, userState.removeDataEntriesByPrefix(SUBCATEGORY));
-        return Result.of(userState.removeDataEntriesByPrefix(SUBCATEGORY));
+        var subcategories = userState.getAllDataEntriesByPrefix(SUBCATEGORY);
+        String latestSubcategory = getLatestSubcategoryKey(subcategories);
+
+        UserState nextUserState;
+        if (subcategories.size() > 1) {
+            nextUserState = userState.nextStep();
+        } else {
+            nextUserState = userState;
+        }
+
+        nextUserState.removeDataEntry(latestSubcategory);
+        onStart(update, nextUserState);
+
+        return Result.of(nextUserState);
     }
 
     private String getNextSubcategoryKey(Map<String, String> subcategories) {
         return SUBCATEGORY + (subcategories.size() + 1);
+    }
+
+    private String getLatestSubcategoryKey(Map<String, String> subcategories) {
+        return SUBCATEGORY + subcategories.size();
     }
 }
