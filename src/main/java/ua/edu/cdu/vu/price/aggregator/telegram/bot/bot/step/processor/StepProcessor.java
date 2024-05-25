@@ -1,21 +1,27 @@
 package ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.processor;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.bot.step.Step;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserState;
 import ua.edu.cdu.vu.price.aggregator.telegram.bot.domain.UserStateService;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.service.TelegramSenderService;
+import ua.edu.cdu.vu.price.aggregator.telegram.bot.task.TelegramSpinnerTask;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.*;
+import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.TelegramUtils.getChatId;
 
 @Component
 public class StepProcessor {
@@ -23,10 +29,17 @@ public class StepProcessor {
     private static final Set<String> COMMANDS = Set.of(BACK, COMPLETE, RESET);
 
     private final UserStateService userStateService;
+    private final TelegramSenderService telegramSenderService;
+    private final ScheduledExecutorService taskScheduler;
     private final Map<Integer, Map<Integer, Step>> steps;
 
-    public StepProcessor(UserStateService userStateService, List<Step> steps) {
+    @Value("${price-aggregator-telegram-bot.scheduling.tasks.spinner.delay-seconds:5}")
+    private int spinnerTaskDelaySeconds;
+
+    public StepProcessor(UserStateService userStateService, TelegramSenderService telegramSenderService, ScheduledExecutorService taskScheduler, List<Step> steps) {
         this.userStateService = userStateService;
+        this.telegramSenderService = telegramSenderService;
+        this.taskScheduler = taskScheduler;
         this.steps = steps.stream()
                 .collect(groupingBy(Step::flowId, toMap(Step::stepId, Function.identity())));
     }
@@ -36,19 +49,32 @@ public class StepProcessor {
     }
 
     public void process(Update update, UserState userState, boolean isInitial) throws TelegramApiException {
-        try {
-            if (isInitial || EXIT.equals(update.getMessage().getText())) {
-                Step step = getStep(userState.initialStep());
-                onStart(update, userState.initialStep(), step, true);
-            } else if (BACK.equals(update.getMessage().getText())) {
-                UserState previousStepUserState = userState.previousStep();
-                processStep(update, previousStepUserState);
-            } else {
-                processStep(update, userState);
+        runWithSpinner(getChatId(update), () -> {
+            try {
+                if (isInitial || EXIT.equals(update.getMessage().getText())) {
+                    Step step = getStep(userState.initialStep());
+                    onStart(update, userState.initialStep(), step, true);
+                } else if (BACK.equals(update.getMessage().getText())) {
+                    UserState previousStepUserState = userState.previousStep();
+                    processStep(update, previousStepUserState);
+                } else {
+                    processStep(update, userState);
+                }
+            } catch (TelegramApiException | RuntimeException e) {
+                userStateService.save(userState);
+                throw e;
             }
-        } catch (TelegramApiException | RuntimeException e) {
-            userStateService.save(userState);
-            throw e;
+        });
+    }
+
+    private void runWithSpinner(long chatId, TelegramApiRunnable runnable) throws TelegramApiException {
+        TelegramSpinnerTask task = new TelegramSpinnerTask(chatId, telegramSenderService);
+        var future = taskScheduler.schedule(task, spinnerTaskDelaySeconds, TimeUnit.SECONDS);
+
+        try {
+            runnable.run();
+        } finally {
+            future.cancel(true);
         }
     }
 

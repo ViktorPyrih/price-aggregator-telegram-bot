@@ -25,7 +25,6 @@ import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Base64Utils.decod
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.Buttons.*;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CallbackDataUtils.extractSearchQuery;
 import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.BACK;
-import static ua.edu.cdu.vu.price.aggregator.telegram.bot.util.CommonConstants.SPINNER_IMAGE;
 
 @Service
 @RequiredArgsConstructor
@@ -67,7 +66,6 @@ public class ProductTelegramSenderService {
     public int sendProducts(long chatId, String marketplace, String query, int page, Supplier<Pageable<Product>> proudctsSupplier, boolean pagination) throws TelegramApiException {
         String message = isNull(query) ? SEARCHING_FOR_PRODUCTS_MESSAGE.formatted(marketplace) : SEARCHING_FOR_PRODUCTS_MESSAGE_WITH_QUERY.formatted(marketplace, query);
         int messageId = telegramSenderService.sendMessage(chatId, message);
-        telegramSenderService.sendAnimation(chatId, SPINNER_IMAGE);
 
         Function<Integer, String> messageTemplate = (elapsedTime) -> message + ELAPSED_TIME_MESSAGE.formatted(elapsedTime);
         TelegramEditMessageTask task = new TelegramEditMessageTask(messageId, chatId, editTaskRateSeconds, messageTemplate, telegramSenderService);

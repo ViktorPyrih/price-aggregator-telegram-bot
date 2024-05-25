@@ -64,11 +64,11 @@ public class ChooseSubcategoryStep implements Step {
     public Result process(Update update, UserState userState) throws TelegramApiException {
         long chatId = getChatId(update);
 
-        String marketplaceEntry = userState.getDataEntry(MARKETPLACE);
+        String marketplace = userState.getDataEntry(MARKETPLACE);
         String category = userState.getDataEntry(CATEGORY);
         var subcategories = userState.getAllDataEntriesByPrefix(SUBCATEGORY);
 
-        var expectedSubcategories = priceAggregatorService.getSubcategories(marketplaceEntry, category, subcategories);
+        var expectedSubcategories = priceAggregatorService.getSubcategories(marketplace, category, subcategories);
         String subcategory = update.getMessage().getText();
 
         if (expectedSubcategories.contains(subcategory)) {
@@ -85,17 +85,10 @@ public class ChooseSubcategoryStep implements Step {
         var subcategories = userState.getAllDataEntriesByPrefix(SUBCATEGORY);
         String latestSubcategory = getLatestSubcategoryKey(subcategories);
 
-        UserState nextUserState;
-        if (subcategories.size() > 1) {
-            nextUserState = userState.nextStep();
-        } else {
-            nextUserState = userState;
-        }
+        userState.removeDataEntry(latestSubcategory);
+        onStart(update, userState);
 
-        nextUserState.removeDataEntry(latestSubcategory);
-        onStart(update, nextUserState);
-
-        return Result.of(nextUserState);
+        return Result.of(userState);
     }
 
     private String getNextSubcategoryKey(Map<String, String> subcategories) {
