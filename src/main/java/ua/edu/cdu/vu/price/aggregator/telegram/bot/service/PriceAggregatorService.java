@@ -1,6 +1,7 @@
 package ua.edu.cdu.vu.price.aggregator.telegram.bot.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Retryable;
@@ -41,20 +42,24 @@ public class PriceAggregatorService {
     private final ProductMapper productMapper;
     private final MarketplaceMapper marketplaceMapper;
 
+    @Cacheable("marketplaces")
     public Map<String, Marketplace> getMarketplaces() {
         MarketplacesResponse response = apiClient.getMarketplaces();
         return marketplaceMapper.convertToDomain(response).stream()
                 .collect(Collectors.toMap(Marketplace::getName, Function.identity()));
     }
 
+    @Cacheable("categories")
     public List<String> getCategories(String marketplace) {
         return apiClient.getCategories(marketplace).categories();
     }
 
+    @Cacheable("subcategories")
     public List<String> getSubcategories(String marketplace, String category, Map<String, String> subcategories) {
         return apiClient.getSubcategories(marketplace, category, subcategories).categories();
     }
 
+    @Cacheable("filters")
     public List<Filter> getFilters(String marketplace, String category, Map<String, String> subcategories) {
         FiltersResponse response = apiClient.getFilters(marketplace, category, subcategories);
         return filterMapper.convertToDomain(response.filters());
