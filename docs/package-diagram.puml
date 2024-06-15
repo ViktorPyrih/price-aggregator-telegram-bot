@@ -1,4 +1,5 @@
 @startuml
+skinparam defaultFontSize 30
 
 package "telegram.bot" {
   package "bot" {
