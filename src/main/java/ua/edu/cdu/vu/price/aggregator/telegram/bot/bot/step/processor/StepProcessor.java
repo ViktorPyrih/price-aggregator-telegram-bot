@@ -60,7 +60,7 @@ public class StepProcessor {
                 } else {
                     processStep(update, userState);
                 }
-            } catch (TelegramApiException | RuntimeException e) {
+            } catch (TelegramApiException e) {
                 userStateService.save(userState);
                 throw e;
             }
